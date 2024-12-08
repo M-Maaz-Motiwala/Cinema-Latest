@@ -40,9 +40,9 @@ const Navbar = () => {
           </li>
           <li>
             <Link
-              to="/showtime"
+              to="/showtimes"
               className={`px-4 py-2 rounded-lg transition-all duration-300 ${
-                isActive("/showtime") ? "bg-primary text-accent font-semibold" : "hover:bg-accent"
+                isActive("/showtimes") ? "bg-primary text-accent font-semibold" : "hover:bg-accent"
               }`}
             >
               Showtime

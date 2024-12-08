@@ -149,7 +149,7 @@ export const getShowtimesForHall = asyncHandler(async (req, res) => {
 // @route GET /api/showtimes
 // @access Public
 export const getAllShowtimes = asyncHandler(async (req, res) => {
-    const showtimes = await Showtime.find().populate('hallId').populate('movieId');
+    const showtimes = await Showtime.find().populate('hallId','name').populate('movieId','title duration picture_url');
     if (!showtimes.length) {
         res.status(404);
         throw new Error('No showtimes found');

@@ -9,6 +9,7 @@ import Dashboard from "./pages/Dashboard"; // Example protected route
 import PrivateRoute from "./components/PrivateRoute"; // Import PrivateRoute
 import Layout from "./components/Layout"; // Layout with Navbar
 import MoviePage from "./pages/MoviesPage";
+import ShowtimePage from "./pages/ShowtimePage";
 
 const App = () => {
     return (
@@ -19,7 +20,7 @@ const App = () => {
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
                     <Route path="/movies/:movieId" element={<MoviePage />} />
-
+                    <Route path="/showtimes" element={<ShowtimePage />} />
                     {/* Protected Routes */}
                     <Route
                         path="/dashboard"
