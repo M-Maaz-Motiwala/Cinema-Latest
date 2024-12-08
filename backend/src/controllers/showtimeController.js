@@ -1,4 +1,4 @@
-// src/controllers/showtimeController.js
+// showtimeController.js
 import Hall from '../models/Hall.js';
 import Movie from '../models/Movie.js';
 import Showtime from '../models/Showtime.js';

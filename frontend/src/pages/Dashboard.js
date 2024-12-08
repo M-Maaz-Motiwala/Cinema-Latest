@@ -68,9 +68,16 @@ const Dashboard = () => {
     };
 
     const handleProfilePicUpload = (e) => {
+        const file = e.target.files[0];
+        if (!file) {
+            alert('No file selected');
+            return;
+        }
+        setProfilePic(file);
+    
         const formData = new FormData();
-        formData.append('profilePicture', profilePic);
-
+        formData.append('profilePicture', file);
+    
         axios
             .post(`${process.env.REACT_APP_BACKEND_URL}/users/profile-picture`, formData, {
                 headers: {
@@ -87,6 +94,7 @@ const Dashboard = () => {
                 alert('Failed to upload profile picture!');
             });
     };
+    
 
     return (
         <div className="min-h-screen bg-background text-primary">
@@ -104,20 +112,17 @@ const Dashboard = () => {
                                             : defaultAvatar
                                     }
                                     alt="Profile"
-                                    className="rounded-full w-32 h-32 object-cover border-4 border-highlight mb-4 sm:mb-0 sm:mr-6"
+                                    className="rounded-full w-32 h-32 object-cover border-4 border-highlight"
                                 />
                                 <input
                                     type="file"
-                                    className="absolute inset-0 opacity-0 cursor-pointer"
-                                    onClick={(e) => e.stopPropagation()} // Prevent triggering on image click
+                                    alt='Click here to change'
+                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer rounded-full"
                                     onChange={(e) => {
                                         setProfilePic(e.target.files[0]);
                                         handleProfilePicUpload(e);
                                     }}
                                 />
-                                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white opacity-0 hover:opacity-100 transition-opacity">
-                                    <span className="text-sm">Click to Change Profile Picture</span>
-                                </div>
                             </div>
                             <div>
                                 <p className="text-lg sm:text-xl">
