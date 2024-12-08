@@ -1,4 +1,4 @@
-// src/controllers/movieController.js
+// movieController.js
 import fs from 'fs';
 import path from 'path';
 import Movie from '../models/Movie.js';
@@ -52,15 +52,18 @@ export const saveMovieFilesController = asyncHandler(async (req, res) => {
         // Retrieve uploaded file paths
         let posterPath = null;
         let trailerPath = null;
-
+        console.log(posterPath)
+        console.log(trailerPath)
         if (req.files?.poster && req.files.poster.length > 0) {
-            posterPath = path.join('public', 'movie', movieId.toString(),'poster', req.files.poster[0].filename);
+            posterPath = path.join(movieId.toString(),'poster', req.files.poster[0].filename);
         }
 
         if (req.files?.trailer && req.files.trailer.length > 0) {
-            trailerPath = path.join('public', 'movie', movieId.toString(), 'trailer', req.files.trailer[0].filename);
+            trailerPath = path.join(movieId.toString(), 'trailer', req.files.trailer[0].filename);
         }
-
+        console.log(posterPath)
+        console.log(trailerPath)
+        
         // Update the movie document in the database
         const updatedMovie = await Movie.findByIdAndUpdate(
             movieId,

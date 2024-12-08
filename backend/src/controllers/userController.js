@@ -1,4 +1,4 @@
-// src/controllers/userController.js
+// userController.js
 import User from '../models/User.js';
 import asyncHandler from 'express-async-handler';
 import { generateToken } from './authController.js';
@@ -26,6 +26,7 @@ export const getUserProfile = asyncHandler(async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
+      profilePicture: user.profilePicture
     });
   } else {
     res.status(404);
@@ -50,7 +51,7 @@ export const uploadProfilePicture = asyncHandler(async (req, res) => {
     throw new Error('User not found');
   }
 
-  user.profilePicture = `/user/${userId}/${req.file.filename}`;
+  user.profilePicture = `${userId}/${req.file.filename}`;
   await user.save();
 
   res.json({ message: 'Profile picture uploaded successfully', profilePicture: user.profilePicture });
@@ -67,7 +68,9 @@ export const updateUserProfile = asyncHandler(async (req, res) => {
     user.email = req.body.email || user.email;
 
     if (req.body.password) {
-      user.password = req.body.password; // Will trigger the pre-save hook to hash
+      console.log('Before saving, password:', user.password); // Debugging
+      user.password = req.body.password; // This will trigger the pre-save hook
+      console.log('After updating, password:', user.password); // Debugging
     }
 
     const updatedUser = await user.save();

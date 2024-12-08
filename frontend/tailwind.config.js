@@ -9,15 +9,15 @@ module.exports = {
     theme: {
         extend: {
             colors: {
-                background: "#1f2937", // Dark background
+                background: "#1f2937", // Dark background(main)(1f2937)
                 primary: "#e5e7eb",   // Light text color
                 secondary: "#374151", // Secondary panel color
                 highlight: "#f59e0b", // Highlight color (Amber-like)
-                accent: "#d97706",    // Accent color (Deeper amber/orange)
+                accent: "#d97706",    // Accent color (Deeper amber/orange)#d97706
             },
             fontFamily: {
                 display: ["Poppins", "sans-serif"], // For headings
-                body: ["Roboto", "sans-serif"],    // For body text
+                body: ["Playfair Display", "serif"],    // For body text
             },
             borderRadius: {
                 lg: "12px",

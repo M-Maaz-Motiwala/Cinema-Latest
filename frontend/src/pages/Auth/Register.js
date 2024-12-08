@@ -1,27 +1,37 @@
 // Register.js
 
-import React, { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { registerUser } from '../../features/auth/authSlice';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { registerUser } from "../../features/auth/authSlice";
+import { useNavigate, Link } from "react-router-dom";
 
 const Register = () => {
-    const [name, setName] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const [name, setName] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [passwordError, setPasswordError] = useState("");
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const { loading, error, token } = useSelector((state) => state.auth);
 
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        // Validate password length
+        if (password.length < 8) {
+            setPasswordError("Password must be at least 8 characters long");
+            return;
+        }
+
         const userData = { name, email, password };
         dispatch(registerUser(userData));
     };
 
-    if (token) {
-        navigate('/dashboard');
-    }
+    useEffect(() => {
+        if (token) {
+            navigate("/dashboard");
+        }
+    }, [token, navigate]);
 
     return (
         <div className="flex justify-center items-center min-h-screen bg-background text-primary">
@@ -61,20 +71,21 @@ const Register = () => {
                             className="w-full p-3 rounded-lg bg-background border border-accent focus:outline-none focus:ring-2 focus:ring-highlight"
                             required
                         />
+                        {passwordError && <p className="text-red-500 text-sm mt-1">{passwordError}</p>}
                     </div>
                     <button
                         type="submit"
                         className="w-full py-3 rounded-lg bg-highlight text-secondary font-bold hover:bg-accent"
                         disabled={loading}
                     >
-                        {loading ? 'Registering...' : 'Register'}
+                        {loading ? "Registering..." : "Register"}
                     </button>
                 </form>
                 <p className="text-sm text-center mt-4">
-                    Already have an account?{' '}
-                    <a href="/login" className="text-highlight hover:text-accent">
+                    Already have an account?{" "}
+                    <Link to="/login" className="text-highlight hover:text-accent">
                         Login
-                    </a>
+                    </Link>
                 </p>
             </div>
         </div>

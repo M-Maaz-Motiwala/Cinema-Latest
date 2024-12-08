@@ -1,10 +1,11 @@
 // Dashboard.js
 
 import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { logout } from '../features/auth/authSlice';
+import defaultAvatar from '../static/default-avatar.png';
+import Logout from '../components/Logout';
 
 const Dashboard = () => {
     const [user, setUser] = useState(null);
@@ -15,7 +16,6 @@ const Dashboard = () => {
     const [newPassword, setNewPassword] = useState('');
     const { token } = useSelector((state) => state.auth);
     const navigate = useNavigate();
-    const dispatch = useDispatch();
 
     useEffect(() => {
         if (!token) {
@@ -48,7 +48,7 @@ const Dashboard = () => {
             name,
             email,
             currentPassword,
-            ...(newPassword && { newPassword }), // Add new password only if provided
+            ...(newPassword && { password: newPassword }), // Add new password only if provided
         };
 
         axios
@@ -88,40 +88,47 @@ const Dashboard = () => {
             });
     };
 
-    const handleLogout = () => {
-        dispatch(logout());
-        navigate('/login');
-    };
-
     return (
         <div className="min-h-screen bg-background text-primary">
-            <div className="container mx-auto py-10">
-                <h1 className="text-4xl font-display text-center mb-8">Dashboard</h1>
+            <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8">
+                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-display text-center mb-8">Dashboard</h1>
                 {user ? (
-                    <div className="bg-secondary p-8 rounded-lg shadow-md max-w-4xl mx-auto">
-                        <h2 className="text-2xl font-bold mb-6 text-highlight">Welcome, {user.name}</h2>
-                        <div className="flex items-center mb-8">
-                        <img
-                            src={(user?.profilePicture) || '../../static/default-avatar.png'}
-                            alt="Profile"
-                            className="rounded-full w-32 h-32 object-cover border-4 border-highlight mr-6"
-                        />
+                    <div className="bg-secondary p-6 sm:p-8 rounded-lg shadow-md max-w-4xl mx-auto">
+                        <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-highlight">Welcome, {user.name}</h2>
+                        <div className="flex items-center flex-col sm:flex-row mb-8">
+                            <div className="relative">
+                                <img
+                                    src={
+                                        user.profilePicture
+                                            ? `${process.env.REACT_APP_BACKEND_URL_STATIC}/UserFiles/${user.profilePicture.replace(/\\/g, '/')}`
+                                            : defaultAvatar
+                                    }
+                                    alt="Profile"
+                                    className="rounded-full w-32 h-32 object-cover border-4 border-highlight mb-4 sm:mb-0 sm:mr-6"
+                                />
+                                <input
+                                    type="file"
+                                    className="absolute inset-0 opacity-0 cursor-pointer"
+                                    onClick={(e) => e.stopPropagation()} // Prevent triggering on image click
+                                    onChange={(e) => {
+                                        setProfilePic(e.target.files[0]);
+                                        handleProfilePicUpload(e);
+                                    }}
+                                />
+                                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white opacity-0 hover:opacity-100 transition-opacity">
+                                    <span className="text-sm">Click to Change Profile Picture</span>
+                                </div>
+                            </div>
                             <div>
-                                <p className="text-lg">
+                                <p className="text-lg sm:text-xl">
                                     <span className="font-semibold">Email:</span> {user.email}
                                 </p>
-                                <button
-                                    onClick={handleLogout}
-                                    className="mt-4 bg-highlight text-white px-4 py-2 rounded-lg hover:bg-accent"
-                                >
-                                    Logout
-                                </button>
                             </div>
                         </div>
 
                         <form onSubmit={handleUpdate} className="space-y-6">
                             <div>
-                                <label htmlFor="name" className="block text-sm font-medium">
+                                <label htmlFor="name" className="block text-sm sm:text-base font-medium">
                                     Name
                                 </label>
                                 <input
@@ -133,7 +140,7 @@ const Dashboard = () => {
                                 />
                             </div>
                             <div>
-                                <label htmlFor="email" className="block text-sm font-medium">
+                                <label htmlFor="email" className="block text-sm sm:text-base font-medium">
                                     Email
                                 </label>
                                 <input
@@ -145,7 +152,7 @@ const Dashboard = () => {
                                 />
                             </div>
                             <div>
-                                <label htmlFor="currentPassword" className="block text-sm font-medium">
+                                <label htmlFor="currentPassword" className="block text-sm sm:text-base font-medium">
                                     Current Password
                                 </label>
                                 <input
@@ -158,7 +165,7 @@ const Dashboard = () => {
                                 />
                             </div>
                             <div>
-                                <label htmlFor="newPassword" className="block text-sm font-medium">
+                                <label htmlFor="newPassword" className="block text-sm sm:text-base font-medium">
                                     New Password (Optional)
                                 </label>
                                 <input
@@ -176,23 +183,6 @@ const Dashboard = () => {
                                 Update Profile
                             </button>
                         </form>
-
-                        <div className="mt-10">
-                            <h3 className="text-xl font-semibold mb-4">Change Profile Picture</h3>
-                            <div className="flex items-center space-x-4">
-                                <input
-                                    type="file"
-                                    onChange={(e) => setProfilePic(e.target.files[0])}
-                                    className="p-2 border border-highlight rounded-lg"
-                                />
-                                <button
-                                    onClick={handleProfilePicUpload}
-                                    className="bg-highlight text-white px-4 py-2 rounded-lg hover:bg-accent"
-                                >
-                                    Upload
-                                </button>
-                            </div>
-                        </div>
                     </div>
                 ) : (
                     <p className="text-center text-lg">Loading...</p>
