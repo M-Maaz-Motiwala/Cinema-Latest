@@ -17,7 +17,7 @@ const showtimeSchema = mongoose.Schema(
     },
     date: { type: Date, required: true},
     time: { type: String, required: true}, // Example format: "18:30"
-    availableSeats: { type: Number, required: true }, // Total available seats for the showtime
+    availableSeats: { type: Number}, // Total available seats for the showtime
     ticketPrice: { type: Number, required: true },
   },
   { timestamps: true }

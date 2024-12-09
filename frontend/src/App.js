@@ -10,6 +10,7 @@ import PrivateRoute from "./components/PrivateRoute"; // Import PrivateRoute
 import Layout from "./components/Layout"; // Layout with Navbar
 import MoviePage from "./pages/MoviesPage";
 import ShowtimePage from "./pages/ShowtimePage";
+import BookingPage from "./pages/BookingPage";
 
 const App = () => {
     return (
@@ -21,6 +22,7 @@ const App = () => {
                     <Route path="/register" element={<Register />} />
                     <Route path="/movies/:movieId" element={<MoviePage />} />
                     <Route path="/showtimes" element={<ShowtimePage />} />
+                    <Route path="/bookings" element={<BookingPage />} />
                     {/* Protected Routes */}
                     <Route
                         path="/dashboard"
