@@ -3,6 +3,7 @@ import Seat from '../models/Seat.js';
 import Showtime from '../models/Showtime.js';
 import Booking from '../models/Booking.js';
 import asyncHandler from 'express-async-handler';
+import User from '../models/User.js';
 
 // @desc Create a booking
 // @route POST /api/bookings
@@ -11,7 +12,11 @@ export const createBooking = asyncHandler(async (req, res) => {
   const { showtimeId, seats } = req.body;
 
   const userId = req.user._id;
-  
+  const user = await User.findById(userId);  
+  if (!user) {
+    res.status(404);
+    throw new Error('User not found');
+  }
   // Check if the showtime exists
   const showtime = await Showtime.findById(showtimeId);
   if (!showtime) {
@@ -65,7 +70,9 @@ export const createBooking = asyncHandler(async (req, res) => {
   console.log('Length of Seats:', seats.length); // Should be a number
   
   showtime.availableSeats -= seats.length;
+  user.tickets += seats.length;
   await showtime.save();
+  await user.save();
 
   // Create a booking
   const booking = new Booking({ userId, showtimeId, seats, totalPrice: await calculateTotalPrice(showtimeId,seats.length) });
@@ -120,6 +127,7 @@ export const cancelSeatReservation = asyncHandler(async (req, res) => {
   const unbook = await Booking.findById(bookingId);
   
   const showtime1 = unbook.showtimeId;
+  const user1 = unbook.userId;
   for (const i of unbook.seats) {
     console.log(i);
     const row = i.charAt(0); // First character is the row
@@ -140,6 +148,11 @@ export const cancelSeatReservation = asyncHandler(async (req, res) => {
     await seat.save();
   }
 
+  const user = await User.findById(user1); // Corrected here
+  if (user) {
+    user.tickets -= unbook.seats.length;
+    await user.save();
+  }
   const showtime = await Showtime.findById(showtime1); // Corrected here
   if (showtime) {
     showtime.availableSeats += unbook.seats.length;
@@ -163,4 +176,28 @@ export const updateBookingStatus = asyncHandler(async (req, res) => {
   booking.status = req.body.status || booking.status; // Example: 'confirmed', 'canceled'
   await booking.save();
   res.json(booking);
+});
+
+// @desc Get all bookings for a specific user (Admin only)
+// @route GET /api/bookings/user/:userId
+// @access Private/Admin
+export const getBookingsForSpecificUser = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+
+  const bookings = await Booking.find({ userId })
+    .populate({
+      path: "showtimeId",
+      populate: {
+        path: "movieId", // Populate the movie through showtime
+        select: "title", // Select only the title of the movie
+      },
+    })
+    .lean(); // Convert Mongoose documents to plain JS objects
+
+  if (!bookings || bookings.length === 0) {
+    res.status(404);
+    throw new Error("No bookings found for this user");
+  }
+
+  res.status(200).json(bookings);
 });
