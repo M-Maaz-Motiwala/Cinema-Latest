@@ -11,6 +11,8 @@ import Layout from "./components/Layout"; // Layout with Navbar
 import MoviePage from "./pages/MoviesPage";
 import ShowtimePage from "./pages/ShowtimePage";
 import BookingPage from "./pages/BookingPage";
+import PaymentPage from "./pages/PaymentPage";
+
 
 const App = () => {
     return (
@@ -23,6 +25,8 @@ const App = () => {
                     <Route path="/movies/:movieId" element={<MoviePage />} />
                     <Route path="/showtimes" element={<ShowtimePage />} />
                     <Route path="/bookings" element={<BookingPage />} />
+                    <Route path="/payment" element={<PaymentPage />} />
+                    
                     {/* Protected Routes */}
                     <Route
                         path="/dashboard"

@@ -8,16 +8,16 @@ import asyncHandler from 'express-async-handler';
 // @route GET /api/seats?hallId= & showtimeId=
 // @access Public
 export const getSeatsByShowtime = asyncHandler(async (req, res) => {
-  const { showtimeId } = req.query;
-  const { hallId } = req.query;
-  console.log(showtimeId);
-  const seats = await Seat.find({$and: [{ showtimeId},{ hallId}] });
-  console.log(seats);
+  const { showtimeId, hallId } = req.query; // Extract both parameters
+  console.log(showtimeId, hallId); // Debugging log to check the received data
+
+  const seats = await Seat.find({ showtimeId, hallId }); // Query without $and operator
+  console.log(seats); // Debugging log to check the fetched seats
+
   if (!seats.length) {
     res.status(404);
     throw new Error('No seats found for the given showtime');
   }
-  
 
   res.json(seats);
 });
