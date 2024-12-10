@@ -5,19 +5,19 @@ import Showtime from '../models/Showtime.js';
 import asyncHandler from 'express-async-handler';
 
 // @desc Get all seats for a hall
-// @route GET /api/seats?hallId= & shotimeId=
+// @route GET /api/seats?hallId= & showtimeId=
 // @access Public
 export const getSeatsByShowtime = asyncHandler(async (req, res) => {
-  const { showtimeId } = req.query;
-  const { hallId } = req.query;
-  console.log(showtimeId);
-  const seats = await Seat.find({$and: [{ showtimeId},{ hallId}] });
-  console.log(seats);
+  const { showtimeId, hallId } = req.query; // Extract both parameters
+  console.log(showtimeId, hallId); // Debugging log to check the received data
+
+  const seats = await Seat.find({ showtimeId, hallId }); // Query without $and operator
+  console.log(seats); // Debugging log to check the fetched seats
+
   if (!seats.length) {
     res.status(404);
     throw new Error('No seats found for the given showtime');
   }
-  
 
   res.json(seats);
 });
@@ -26,30 +26,26 @@ export const getSeatsByShowtime = asyncHandler(async (req, res) => {
 // @desc Add seats for a hall and showtime based on hall layout
 // @route POST /api/seats
 // @access Private/Admin
-export const createSeats = asyncHandler(async (req, res) => {
-  const { hallId, showtimeId } = req.body;
-
+export const createSeats = async (hallId, showtimeId) => {
   // Fetch Hall and Showtime data
   const hall = await Hall.findById(hallId);
   if (!hall) {
-    res.status(404);
     throw new Error('Hall not found');
   }
+
   const existingSeats = await Seat.find({ showtimeId });
   if (existingSeats.length > 0) {
-    res.status(400);
     throw new Error('Seats for this showtime have already been created');
   }
 
-  if (!row || !column) {
-    res.status(400);
+  if (!hall.Seatlayout.row || !hall.Seatlayout.column) {
+    console.log(hall.Seatlayout.row)
+    console.log(hall.Seatlayout.column)
     throw new Error('Invalid seat layout in the hall');
   }
 
-
   const showtime = await Showtime.findById(showtimeId);
   if (!showtime) {
-    res.status(404);
     throw new Error('Showtime not found');
   }
 
@@ -82,8 +78,9 @@ export const createSeats = asyncHandler(async (req, res) => {
   showtime.availableSeats = seats.length;
   await showtime.save();
 
-  res.status(201).json({ message: 'Seats created successfully', seats });
-});
+  return { message: 'Seats created successfully', seats };
+};
+
 
 
 // @desc Update seat selection for a showtime

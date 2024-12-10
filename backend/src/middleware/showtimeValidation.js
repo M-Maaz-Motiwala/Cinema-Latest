@@ -13,7 +13,10 @@ export const checkShowtimeConflictMiddleware = async (req, res, next) => {
     for (const show of existingShowtimes) {
         const showStart = new Date(`${date}T${show.time}`);
         const showEnd = new Date(showStart.getTime() + show.movieId.duration * 60000);
-
+        console.log(newShowEnd)
+        console.log(newShowStart)
+        console.log(showStart)
+        console.log(showEnd)
         if (!(newShowEnd <= showStart || newShowStart >= showEnd)) {
             return res.status(400).json({ message: 'Hall is not available at the selected time' });
         }
