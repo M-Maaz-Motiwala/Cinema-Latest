@@ -1,4 +1,4 @@
-// src/controllers/showtimeController.js
+// showtimeController.js
 import Hall from '../models/Hall.js';
 import Movie from '../models/Movie.js';
 import Seats from '../models/Seat.js';
@@ -137,11 +137,11 @@ export const getShowtimesForMovie = asyncHandler(async (req, res) => {
     const movieId = req.params.movieId;
     const showtimes = await Showtime.find({ movieId }).populate('hallId');
     if (!showtimes.length) {
-        res.status(404);
-        throw new Error('No showtimes found for this movie');
+        return res.status(404).json({ message: 'No showtimes found for this movie' });  // Ensure response is returned and exits early
     }
     res.json(showtimes);
 });
+
 
 // @desc Get showtimes for a specific hall
 // @route GET /api/showtimes/hall/:hallId
@@ -150,8 +150,7 @@ export const getShowtimesForHall = asyncHandler(async (req, res) => {
     const hallId = req.params.hallId;
     const showtimes = await Showtime.find({ hallId }).populate('movieId');
     if (!showtimes.length) {
-        res.status(404);
-        throw new Error('No showtimes found for this hall');
+        res.status(404).json({ message: 'No showtimes found for this hall' });
     }
     res.json(showtimes);
 });

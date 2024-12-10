@@ -1,4 +1,4 @@
-// src/routes/userRoute.js
+// userRoutes.js
 import express from 'express';
 import {
   getUserProfile,
@@ -24,6 +24,5 @@ router.post("/profile-picture", protect, uploadSingle, uploadProfilePicture);
 // Admin Routes
 router.route('/').get(protect, admin, getAllUsers); // Get all users
 router.route('/:id').delete(protect, admin, deleteUser); // Delete user by ID by admin
-router.post("/assign-role", protect, admin, assignRole); // Assign role
-
+router.route('/:userId/role').put(protect, admin, assignRole); // Assign role
 export default router;

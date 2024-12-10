@@ -1,16 +1,22 @@
 // bookingController.js
 import Seat from '../models/Seat.js';
+import mongoose from "mongoose";
 import Showtime from '../models/Showtime.js';
 import Booking from '../models/Booking.js';
 import asyncHandler from 'express-async-handler';
+
+
+import User from '../models/User.js';
+
+
 // @desc Create a booking
 // @route POST /api/bookings
 // @access Private
 export const createBooking = asyncHandler(async (req, res) => {
   const { showtimeId, seats } = req.body;
   const userId = req.user._id;
-  console.log("I am in createBooking");
 
+  console.log("I am in createBooking");
   // Check if the showtime exists
   const showtime = await Showtime.findById(showtimeId);
   if (!showtime) {
@@ -108,6 +114,7 @@ export const cancelSeatReservation = asyncHandler(async (req, res) => {
   }
 
   const showtime1 = unbook.showtimeId;
+  const user1 = unbook.userId;
   for (const i of unbook.seats) {
     console.log(i);
     const row = i.charAt(0); // First character is the row
@@ -130,7 +137,9 @@ export const cancelSeatReservation = asyncHandler(async (req, res) => {
     await seat.save();
   }
 
+
   const showtime = await Showtime.findById(showtime1);
+
   if (showtime) {
     showtime.availableSeats += unbook.seats.length;
     await showtime.save();
@@ -176,4 +185,36 @@ export const updateBookingStatus = asyncHandler(async (req, res) => {
     console.error("Error in updateBookingStatus:", error.message);
     res.status(500).json({ message: error.message || "An unexpected error occurred" });
   }
+
 });
+// @desc Get all bookings for a specific user (Admin only)
+// @route GET /api/bookings/user/:userId
+// @access Private/Admin
+export const getBookingsForSpecificUser = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+
+  // Validate if userId is a valid ObjectId
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    return res.status(400).json({ message: "Invalid user ID format" });
+  }
+
+  // Fetch bookings with population
+  const bookings = await Booking.find({ userId })
+    .populate({
+      path: "showtimeId",
+      populate: {
+        path: "movieId",
+        select: "title", // Select only the movie title
+      },
+    })
+    .lean(); // Convert Mongoose documents to plain JS objects
+
+  // Handle no bookings found
+  if (!bookings || bookings.length === 0) {
+    return res.status(404).json({ message: "No bookings found for this user" });
+  }
+
+  // Return the bookings
+  res.status(200).json(bookings);
+});
+
