@@ -83,9 +83,6 @@ export const saveMovieFilesController = asyncHandler(async (req, res) => {
     }
 });
 
-// Handle the file saving (poster and trailer)
-// const { poster: savedPosterPath, trailer: savedTrailerPath } = await saveMovieFiles(req.files, movieId);
-
 // **READ**: Get all movies
 // @desc    Get all movies
 // @route   GET /api/movies
@@ -154,12 +151,17 @@ export const deleteMovie = asyncHandler(async (req, res) => {
         if (fs.existsSync(posterPath)) fs.unlinkSync(posterPath);
         if (fs.existsSync(trailerPath)) fs.unlinkSync(trailerPath);
 
+        // Delete the movie itself
         await Movie.findByIdAndDelete(req.params.id);
+        
+        // Ensure that we respond only once after deletion
         res.status(200).json({ message: 'Movie deleted successfully' });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error(error);
+        res.status(500).json({ message: 'An error occurred during movie deletion: ' + error.message });
     }
 });
+
 
 // **SEARCH**: Search for movies based on query parameters
 // @desc    Search movies

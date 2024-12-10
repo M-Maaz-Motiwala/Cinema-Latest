@@ -1,5 +1,6 @@
 // bookingController.js
 import Seat from '../models/Seat.js';
+import mongoose from "mongoose";
 import Showtime from '../models/Showtime.js';
 import Booking from '../models/Booking.js';
 import asyncHandler from 'express-async-handler';
@@ -184,20 +185,28 @@ export const updateBookingStatus = asyncHandler(async (req, res) => {
 export const getBookingsForSpecificUser = asyncHandler(async (req, res) => {
   const { userId } = req.params;
 
+  // Validate if userId is a valid ObjectId
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    return res.status(400).json({ message: "Invalid user ID format" });
+  }
+
+  // Fetch bookings with population
   const bookings = await Booking.find({ userId })
     .populate({
       path: "showtimeId",
       populate: {
-        path: "movieId", // Populate the movie through showtime
-        select: "title", // Select only the title of the movie
+        path: "movieId",
+        select: "title", // Select only the movie title
       },
     })
     .lean(); // Convert Mongoose documents to plain JS objects
 
+  // Handle no bookings found
   if (!bookings || bookings.length === 0) {
-    res.status(404);
-    throw new Error("No bookings found for this user");
+    return res.status(404).json({ message: "No bookings found for this user" });
   }
 
+  // Return the bookings
   res.status(200).json(bookings);
 });
+

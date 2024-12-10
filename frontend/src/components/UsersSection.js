@@ -92,58 +92,57 @@ const UsersSection = ({ token }) => {
   );
 
   return (
-    <div>
-      <h2 className="text-2xl font-display font-bold mb-4 text-primary">
-        Users Management
-      </h2>
+    <div className="p-6 bg-background text-primary">
+      <h2 className="text-3xl font-display font-bold mb-6">Users Management</h2>
 
       {/* Search Input */}
-      <div className="mb-4">
+      <div className="mb-6">
         <input
           type="text"
           placeholder="Search by name or email..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="px-4 py-2 border rounded-lg w-full"
+          className="px-4 py-2 border-2 border-primary rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-highlight"
         />
       </div>
 
-      <table className="w-full text-left border-collapse">
-        <thead>
-          <tr className="text-primary">
-            <th className="border-b p-2">Name</th>
-            <th className="border-b p-2">Email</th>
-            <th className="border-b p-2">Role</th>
-            <th className="border-b p-2">Tickets</th>
-            <th className="border-b p-2">Actions</th>
+      {/* User Table */}
+      <table className="w-full table-auto bg-secondary rounded-xl shadow-lg">
+        <thead className="bg-background text-highlight">
+          <tr>
+            <th className="px-6 py-3">Name</th>
+            <th className="px-6 py-3">Email</th>
+            <th className="px-6 py-3">Role</th>
+            <th className="px-6 py-3">Tickets</th>
+            <th className="px-6 py-3">Actions</th>
           </tr>
         </thead>
         <tbody>
           {filteredUsers.map((user) => (
-            <tr key={user._id} className="text-primary">
-              <td className="border-b p-2">{user.name}</td>
-              <td className="border-b p-2">{user.email}</td>
-              <td className="border-b p-2">{user.role}</td>
-              <td className="border-b p-2">
+            <tr key={user._id} className="border-t border-primary">
+              <td className="px-6 py-4">{user.name}</td>
+              <td className="px-6 py-4">{user.email}</td>
+              <td className="px-6 py-4">{user.role}</td>
+              <td className="px-6 py-4">
                 <button
                   onClick={() => handleViewBookings(user._id)}
-                  className="px-3 py-1 bg-highlight text-background rounded-lg"
+                  className="px-3 py-1 bg-highlight text-background rounded-lg hover:bg-accent"
                 >
                   View ({(userBookings[user._id]?.length || 0)})
                 </button>
               </td>
-              <td className="border-b p-2">
+              <td className="px-6 py-4">
                 {user.role === "admin" ? (
                   <button
                     onClick={() => handleRoleChange(user._id, "user")}
-                    className="px-3 py-1 bg-accent text-background rounded-lg"
+                    className="px-3 py-1 bg-accent text-background rounded-lg hover:bg-highlight"
                   >
                     Demote to User
                   </button>
                 ) : (
                   <button
                     onClick={() => handleRoleChange(user._id, "admin")}
-                    className="px-3 py-1 bg-highlight text-background rounded-lg"
+                    className="px-3 py-1 bg-highlight text-background rounded-lg hover:bg-accent"
                   >
                     Promote to Admin
                   </button>
@@ -154,6 +153,7 @@ const UsersSection = ({ token }) => {
         </tbody>
       </table>
 
+      {/* Bookings Popup */}
       {selectedUser && (
         <div className="fixed inset-0 bg-background bg-opacity-90 flex justify-center items-center z-50">
           <div className="bg-secondary p-6 rounded-xl shadow-lg w-3/4 max-h-[75vh] overflow-y-auto scrollbar-thin scrollbar-thumb-highlight scrollbar-track-background">
@@ -183,7 +183,7 @@ const UsersSection = ({ token }) => {
             </div>
             <button
               onClick={closePopup}
-              className="mt-4 px-4 py-2 bg-accent text-background rounded-lg"
+              className="mt-4 px-4 py-2 bg-accent text-background rounded-lg hover:bg-highlight"
             >
               Close
             </button>

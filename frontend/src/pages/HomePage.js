@@ -4,6 +4,8 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import Slider from 'react-slick'; // Import React Slick for carousel
+import { FaImage } from 'react-icons/fa'; // Example: FontAwesome's image icon
+
 
 const HomePage = () => {
     const [movies, setMovies] = useState([]);
@@ -46,11 +48,17 @@ const HomePage = () => {
                             <Link to={`/movies/${movie._id}`}>
                                 <div className="relative group">
                                     {/* Movie Poster */}
-                                    <img
-                                        src={`${process.env.REACT_APP_BACKEND_URL_STATIC}/MovieFiles/${movie.picture_url.replace(/\\/g, '/')}`}
-                                        alt={movie.title}
-                                        className="w-full h-[600px] sm:h-[800px] object-cover rounded-lg"
-                                    />
+                                    {movie.picture_url ? (
+                                        <img
+                                            src={`${process.env.REACT_APP_BACKEND_URL_STATIC}/MovieFiles/${movie.picture_url.replace(/\\/g, '/')}`}
+                                            alt={movie.title}
+                                            className="w-full h-[600px] sm:h-[800px] object-cover rounded-lg"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-[600px] sm:h-[800px] bg-gray-300 flex items-center justify-center rounded-lg">
+                                            <FaImage className="text-gray-500 text-6xl" />
+                                        </div>
+                                    )}
                                     {/* Hover Overlay */}
                                     <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                                         <h3 className="text-xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white font-sans px-4">
@@ -71,11 +79,17 @@ const HomePage = () => {
                     {movies.map((movie) => (
                         <Link to={`/movies/${movie._id}`} key={movie._id}>
                             <div className="bg-secondary p-4 rounded-lg shadow-md hover:shadow-lg">
-                                <img
-                                    src={`${process.env.REACT_APP_BACKEND_URL_STATIC}/MovieFiles/${movie.picture_url.replace(/\\/g, '/')}`}
-                                    alt={movie.title}
-                                    className="rounded-lg object-cover w-full h-48 sm:h-56 lg:h-64"
-                                />
+                                {movie.picture_url ? (
+                                    <img
+                                        src={`${process.env.REACT_APP_BACKEND_URL_STATIC}/MovieFiles/${movie.picture_url.replace(/\\/g, '/')}`}
+                                        alt={movie.title}
+                                        className="rounded-lg object-cover w-full h-48 sm:h-56 lg:h-64"
+                                    />
+                                ) : (
+                                    <div className="w-full h-48 sm:h-56 lg:h-64 bg-gray-300 flex items-center justify-center rounded-lg">
+                                        <FaImage className="text-gray-500 text-6xl" />
+                                    </div>
+                                )}
                                 <div className="mt-4">
                                     <h3 className="text-xl sm:text-2xl font-bold">{movie.title}</h3>
                                     <p className="text-sm text-gray-400">{movie.genre}</p>
