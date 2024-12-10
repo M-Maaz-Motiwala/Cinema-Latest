@@ -229,7 +229,7 @@ const BookingPage = () => {
         "pendingBooking",
         JSON.stringify({ bookingId: booking._id })
       );
-      console.log(booking._id);
+      console.log(booking.createdAt);
       // Navigate to payment only if booking is successfully created
       navigate("/payment", {
         state: {
@@ -238,6 +238,7 @@ const BookingPage = () => {
           showtime: showtimes.find((showtime) => showtime._id === selectedShowtime),
           userDetails,
           bookingId: booking._id,
+          bookingdate: new Date(booking.updatedAt).toISOString(),
           totalPrice: booking.totalPrice,
         },
       });

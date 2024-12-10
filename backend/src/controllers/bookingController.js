@@ -25,30 +25,27 @@ export const createBooking = asyncHandler(async (req, res) => {
   }
 
   // Check seat availability using the Seat model
+  // Check seat availability using the Seat model
   const unavailableSeats = [];
   for (const i of seats) {
     const row = i.charAt(0); // First character is the row
-    const column = parseInt(i.charAt(1)); // second character is column and its number
+    const column = parseInt(i.slice(1)); // Extract everything after the first character as the column number
     const seat = await Seat.findOne({ showtimeId, row, column });
     if (!seat || !seat.isAvailable) {
       unavailableSeats.push(i); // Add to unavailable seats list
     }
   }
 
-  if (unavailableSeats.length > 0) {
-    res.status(400);
-    throw new Error(`Seats ${unavailableSeats.join(', ')} are already booked`);
-  }
-
   // Update seats availability
   for (const i of seats) {
     const row = i.charAt(0); // First character is the row
-    const column = parseInt(i.charAt(1)); // second character is column and its number
+    const column = parseInt(i.slice(1)); // Extract everything after the first character as the column number
     await Seat.updateMany(
       { row, column, showtimeId },
       { $set: { isAvailable: false } }
     );
   }
+
 
   // Update showtime available seats count
   showtime.availableSeats -= seats.length;
