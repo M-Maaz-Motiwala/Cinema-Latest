@@ -1,11 +1,13 @@
-// src/utils/sendEmail.js
+// sendEmail.js
 import nodemailer from "nodemailer";
 
-const sendEmail = async ({ to, subject, text }) => {
+const sendEmail = async ({ to, subject, html }) => {
   try {
     // Configure the transporter
     const transporter = nodemailer.createTransport({
-      service: "gmail", // or another email service like Outlook
+      host: "smtp.gmail.com", // or another email service like Outlook
+      port: 587, // Use 465 for SSL
+      secure: false, // true for SSL
       auth: {
         user: process.env.EMAIL_USER, // Your email address
         pass: process.env.EMAIL_PASS, // Your email password
@@ -17,7 +19,7 @@ const sendEmail = async ({ to, subject, text }) => {
       from: process.env.EMAIL_USER, // Sender's email
       to,
       subject,
-      text,
+      html,
     };
 
     // Send the email

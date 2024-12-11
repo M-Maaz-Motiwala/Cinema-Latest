@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { FaEdit, FaSave, FaTimes, FaCamera } from 'react-icons/fa';
+import { PropagateLoader } from 'react-spinners';
 
 const ProfileSection = ({ token }) => {
   const [profile, setProfile] = useState({
@@ -16,9 +18,10 @@ const ProfileSection = ({ token }) => {
     profilePicture: null,
   });
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    // Fetch admin profile data
     const fetchProfile = async () => {
       try {
         const { data } = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/users/profile`, {
@@ -26,8 +29,8 @@ const ProfileSection = ({ token }) => {
         });
         setProfile(data);
         setFormData({ name: data.name, email: data.email, password: '' });
-      } catch (error) {
-        console.error('Failed to fetch profile:', error);
+      } catch (err) {
+        setError('Failed to fetch profile');
       }
     };
     fetchProfile();
@@ -42,46 +45,72 @@ const ProfileSection = ({ token }) => {
     }
   };
 
-  const handleFormSubmit = async (e) => {
-    e.preventDefault();
-    const updatedData = new FormData();
-    updatedData.append('name', formData.name);
-    updatedData.append('email', formData.email);
-    if (formData.password) {
-      updatedData.append('password', formData.password);
-    }
-    if (formData.profilePicture) {
-      updatedData.append('profilePicture', formData.profilePicture);
-    }
-
+  const updateProfileDetails = async () => {
     try {
-      // Update profile
-      await axios.put(`${process.env.REACT_APP_BACKEND_URL}/users/profile`, updatedData, {
+      setLoading(true);
+      await axios.put(
+        `${process.env.REACT_APP_BACKEND_URL}/users/profile`,
+        {
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setLoading(false);
+    } catch (err) {
+      setError('Failed to update profile details');
+      setLoading(false);
+    }
+  };
+
+  const updateProfilePicture = async () => {
+    try {
+      const uploadData = new FormData();
+      uploadData.append('profilePicture', formData.profilePicture);
+      await axios.post(`${process.env.REACT_APP_BACKEND_URL}/users/profile-picture`, uploadData, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',
         },
       });
+    } catch (err) {
+      setError('Failed to upload profile picture');
+    }
+  };
 
-      // Fetch the updated profile
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    if (formData.name || formData.email || formData.password) {
+      await updateProfileDetails();
+    }
+    if (formData.profilePicture) {
+      await updateProfilePicture();
+    }
+    setIsEditing(false);
+
+    // Refresh profile data
+    try {
       const { data } = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/users/profile`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-
       setProfile(data);
-      setIsEditing(false);
-    } catch (error) {
-      console.error('Failed to update profile:', error);
+    } catch {
+      setError('Failed to refresh profile');
     }
   };
 
   return (
-    <div>
-      <h2 className="text-2xl font-bold mb-4">Admin Profile</h2>
+    <div className="max-w-2xl mx-auto p-6 bg-secondary rounded-lg shadow-md">
+      <h2 className="text-3xl font-extrabold text-primary mb-6">Admin Profile</h2>
+      {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
       {isEditing ? (
         <form onSubmit={handleFormSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="name" className="block text-lg font-semibold">
+          <div className="relative">
+            <label htmlFor="name" className="block text-lg font-semibold text-primary">
               Name
             </label>
             <input
@@ -90,11 +119,11 @@ const ProfileSection = ({ token }) => {
               name="name"
               value={formData.name}
               onChange={handleInputChange}
-              className="w-full p-2 border rounded-md"
+              className="border-2 border-highlight bg-background text-primary p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-highlight w-full"
             />
           </div>
-          <div>
-            <label htmlFor="email" className="block text-lg font-semibold">
+          <div className="relative">
+            <label htmlFor="email" className="block text-lg font-semibold text-primary">
               Email
             </label>
             <input
@@ -103,11 +132,11 @@ const ProfileSection = ({ token }) => {
               name="email"
               value={formData.email}
               onChange={handleInputChange}
-              className="w-full p-2 border rounded-md"
+              className="border-2 border-highlight bg-background text-primary p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-highlight w-full"
             />
           </div>
-          <div>
-            <label htmlFor="password" className="block text-lg font-semibold">
+          <div className="relative">
+            <label htmlFor="password" className="block text-lg font-semibold text-primary">
               New Password
             </label>
             <input
@@ -116,56 +145,79 @@ const ProfileSection = ({ token }) => {
               name="password"
               value={formData.password}
               onChange={handleInputChange}
-              className="w-full p-2 border rounded-md"
+              className="border-2 border-highlight bg-background text-primary p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-highlight w-full"
               placeholder="Leave blank to keep current password"
             />
           </div>
-          <div>
-            <label htmlFor="profilePicture" className="block text-lg font-semibold">
+          <div className="relative">
+            <label htmlFor="profilePicture" className="block text-lg font-semibold text-primary mb-2">
               Profile Picture
             </label>
-            <input
-              type="file"
-              id="profilePicture"
-              name="profilePicture"
-              onChange={handleInputChange}
-              className="w-full p-2"
-            />
+            <div
+              className="relative border-2 border-dashed border-accent bg-secondary-light rounded-lg p-4 flex items-center justify-center cursor-pointer"
+              onClick={() => document.getElementById('profilePicture').click()}
+            >
+              {formData.profilePicture ? (
+                <img
+                  src={URL.createObjectURL(formData.profilePicture)}
+                  alt="Profile Preview"
+                  className="w-full h-full object-cover rounded-lg"
+                />
+              ) : (
+                <span className="text-center text-primary font-medium ">
+                  Click to upload Profile Picture <FaCamera />
+                </span>
+              )}
+              <input
+                type="file"
+                id="profilePicture"
+                name="profilePicture"
+                accept="image/*"
+                onChange={handleInputChange}
+                className="hidden"
+              />
+            </div>
           </div>
-          <button
-            type="submit"
-            className="bg-accent text-primary px-4 py-2 rounded-md"
-          >
-            Save Changes
-          </button>
-          <button
-            type="button"
-            className="ml-4 px-4 py-2 rounded-md border"
-            onClick={() => setIsEditing(false)}
-          >
-            Cancel
-          </button>
+
+          <div className="flex items-center space-x-4">
+            <button
+              type="submit"
+              className="flex items-center bg-accent hover:bg-highlight text-white px-5 py-3 rounded-lg transition-transform transform hover:scale-105"
+              disabled={loading}
+            >
+              {loading ? <PropagateLoader
+                            color="#d97706"
+                            size={20}
+                            speedMultiplier={1}
+                          /> : <FaSave className="mr-2" />} Save Changes
+            </button>
+            <button
+              type="button"
+              className="flex items-center text-primary px-5 py-3 bg-opacity-50 bg-background shadow-inner shadow-stone-950 hover:bg-red-700 rounded-lg transition-transform transform hover:scale-105"
+              onClick={() => setIsEditing(false)}
+            >
+              <FaTimes className="mr-2" /> Cancel
+            </button>
+          </div>
         </form>
       ) : (
-        <div>
-          <div className="mb-4">
-            <img
-              src={
-                profile.profilePicture
-                  ? `${process.env.REACT_APP_BACKEND_URL_STATIC}/UserFiles/${profile.profilePicture.replace(/\\/g, '/')}`
-                  : '/default-profile.png'
-              }
-              alt="Profile"
-              className="w-32 h-32 rounded-full mb-4"
-            />
-            <p className="text-lg font-semibold">Name: {profile.name}</p>
-            <p className="text-lg font-semibold">Email: {profile.email}</p>
-          </div>
+        <div className="text-center">
+          <img
+            src={
+              profile.profilePicture
+                ? `${process.env.REACT_APP_BACKEND_URL_STATIC}/UserFiles/${profile.profilePicture.replace(/\\/g, '/')}`
+                : '/default-profile.png'
+            }
+            alt="Profile"
+            className="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-accent shadow-md transition-transform transform hover:scale-110"
+          />
+          <p className="text-lg font-semibold text-primary">Name: {profile.name}</p>
+          <p className="text-lg font-semibold text-primary">Email: {profile.email}</p>
           <button
-            className="bg-accent text-primary px-4 py-2 rounded-md"
+            className="mt-4 flex items-center bg-accent text-white px-5 py-3 rounded-lg transition-transform transform hover:scale-105"
             onClick={() => setIsEditing(true)}
           >
-            Edit Profile
+            <FaEdit className="mr-2" /> Edit Profile
           </button>
         </div>
       )}

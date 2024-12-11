@@ -74,9 +74,15 @@ const calculateTotalPrice = async (showtimeId, seats) => {
 // @route GET /api/bookings
 // @access Private
 export const getBookingsForUser = asyncHandler(async (req, res) => {
-  const bookings = await Booking.find({ userId: req.user._id });
+  const bookings = await Booking.find({ userId: req.user._id })
+    .populate({
+      path: 'showtimeId',
+      select: 'date time', // Fetch only date and time fields from the Showtime model
+    });
+
   res.json(bookings);
 });
+
 
 // @desc Get booking details by booking ID
 // @route GET /api/bookings/:id

@@ -15,6 +15,8 @@ import MoviePage from "./pages/MoviesPage";
 import ShowtimePage from "./pages/ShowtimePage";
 import BookingPage from "./pages/BookingPage";
 import PaymentPage from "./pages/PaymentPage";
+import ForgotPassword from "./pages/Auth/ForgotPassword";
+import ResetPassword from "./pages/Auth/ResetPassword";
 
 
 const App = () => {
@@ -31,6 +33,9 @@ const App = () => {
                         <Route path="/showtimes" element={<ShowtimePage />} />
                         <Route path="/bookings" element={<BookingPage />} />
                         <Route path="/payment" element={<PaymentPage />} />
+                        <Route path="/forgot-password" element={<ForgotPassword />} />
+                        <Route path="/reset-password/:token" element={<ResetPassword />} />
+
                         {/* Protected Routes */}
                         <Route
                             path="/dashboard"

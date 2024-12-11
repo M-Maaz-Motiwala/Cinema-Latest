@@ -1,4 +1,4 @@
-// login.js
+// Login.js
 
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -88,6 +88,13 @@ const Login = () => {
                         Register
                     </Link>
                 </p>
+                <p className="text-sm text-center mt-4">
+                    Forgot your password?{" "}
+                    <Link to="/forgot-password" className="text-highlight hover:text-accent">
+                        Reset Password
+                    </Link>
+                </p>
+
             </div>
         </div>
     );
