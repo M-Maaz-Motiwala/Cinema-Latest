@@ -2,7 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import Spinner from './Spinner'; // Importing a spinner component for loading state
+import { PropagateLoader } from 'react-spinners';
+import { FaEdit, FaTrash } from 'react-icons/fa';
+
 
 const ManageShowtimesSection = ({ token }) => {
   const [showtimes, setShowtimes] = useState([]);
@@ -125,12 +127,13 @@ const ManageShowtimesSection = ({ token }) => {
 
   return (
     <div className="p-6 bg-background text-primary min-h-screen">
-      <h2 className="text-4xl font-semibold mb-8 text-center">Manage Showtimes</h2>
+
+      <h2 className="text-3xl font-bold mb-6">Manage Showtimes</h2>
 
       {/* Form for creating or editing showtime */}
       <form
         onSubmit={editingShowtime ? handleUpdateShowtime : handleCreateShowtime}
-        className="mb-8 p-6 bg-secondary rounded-xl shadow-lg border-2 border-highlight transition-all duration-300 ease-in-out"
+        className="mb-8 p-6 bg-secondary rounded-xl shadow-lg transition-all duration-300 ease-in-out"
       >
         <h3 className="font-semibold text-2xl mb-6 text-center">
           {editingShowtime ? 'Update Showtime' : 'Add Showtime'}
@@ -224,7 +227,11 @@ const ManageShowtimesSection = ({ token }) => {
       {/* Showtimes List */}
       {isLoading ? (
         <div className="flex justify-center items-center">
-          <Spinner /> {/* Show loading spinner when data is loading */}
+          <PropagateLoader
+            color="#d97706"
+            size={20}
+            speedMultiplier={1}
+          />{/* Show loading spinner when data is loading */}
         </div>
       ) : (
         <div>
@@ -242,15 +249,15 @@ const ManageShowtimesSection = ({ token }) => {
                 <div className="space-x-2">
                   <button
                     onClick={() => handleEditShowtime(showtime)}
-                    className="px-4 py-2 bg-highlight hover:bg-accent rounded-lg text-black transition-all"
+                    className="px-4 py-2 text-accent hover:text-highlight rounded-lg transition-all"
                   >
-                    Edit
+                    <FaEdit />
                   </button>
                   <button
                     onClick={() => handleDeleteShowtime(showtime._id)}
-                    className="px-4 py-2 bg-accent hover:bg-red-700 rounded-lg text-white transition-all"
+                    className="px-4 py-2 text-red-500 hover:text-red-700 rounded-lg transition-all"
                   >
-                    Delete
+                    <FaTrash />
                   </button>
                 </div>
               </li>

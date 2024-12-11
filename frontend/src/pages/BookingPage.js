@@ -3,6 +3,7 @@ import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 
+
 // Types
 const HALL_TYPES = ["golden", "silver", "platinum"];
 
@@ -177,6 +178,7 @@ const BookingPage = () => {
   const [loading, setLoading] = useState(true);
   const [loadingSeats, setLoadingSeats] = useState(false);
   const [userDetails, setUserDetails] = useState(null);
+
   const [movies, setMovies] = useState([]);
   const [filteredMovies, setFilteredMovies] = useState([]);
   const [showtimes, setShowtimes] = useState([]);

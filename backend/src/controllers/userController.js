@@ -67,7 +67,7 @@ export const updateUserProfile = asyncHandler(async (req, res) => {
   if (user) {
     user.name = req.body.name || user.name;
     user.email = req.body.email || user.email;
-
+    console.log(req.body.password)
     if (req.body.password) {
       console.log('Before saving, password:', user.password); // Debugging
       user.password = req.body.password; // This will trigger the pre-save hook

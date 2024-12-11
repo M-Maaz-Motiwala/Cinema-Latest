@@ -116,6 +116,7 @@ const Dashboard = () => {
                             setNewPassword={setNewPassword}
                             handleProfilePicUpload={handleProfilePicUpload}
                             handleUpdate={handleUpdate}
+                            token={token}
                         />
                     )
                 ) : (
