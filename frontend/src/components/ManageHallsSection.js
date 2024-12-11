@@ -5,6 +5,7 @@ import axios from 'axios';
 import { FaEdit, FaTrash, FaPlus } from 'react-icons/fa';
 import { PropagateLoader } from 'react-spinners';
 
+
 const ManageHallsSection = ({ token }) => {
   const [halls, setHalls] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -89,6 +90,10 @@ const ManageHallsSection = ({ token }) => {
       <h2 className="text-3xl font-bold mb-6">Manage Halls</h2>
 
       {loading ? (
+        <div className="flex justify-center items-center">
+          <div className="loader ease-linear rounded-full border-4 border-t-4 border-highlight h-12 w-12"></div>
+        </div>
+
         <PropagateLoader
           color="#d97706"
           size={20}

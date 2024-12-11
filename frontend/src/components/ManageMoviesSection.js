@@ -4,7 +4,6 @@ import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import { FaImage } from 'react-icons/fa';
 
-
 const ManageMoviesSection = ({ token }) => {
     const [movies, setMovies] = useState([]);
     const [editForm, setEditForm] = useState({});

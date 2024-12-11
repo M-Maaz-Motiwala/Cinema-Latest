@@ -4,16 +4,20 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import {useSelector} from "react-redux";
 
+import { useLocation } from 'react-router-dom';
 
 const BookingPage = () => {
+  const location = useLocation();
+  const { hall, movie, showtime } = location.state || {};
   const [movies, setMovies] = useState([]);
   const [filteredMovies, setFilteredMovies] = useState([]);
   const [showtimes, setShowtimes] = useState([]);
   const [filteredShowtimes, setFilteredShowtimes] = useState([]);
   const [hallTypes, setHallTypes] = useState(["golden", "silver", "platinum"]);
-  const [selectedMovie, setSelectedMovie] = useState("");
-  const [selectedShowtime, setSelectedShowtime] = useState("");
-  const [selectedHallType, setSelectedHallType] = useState("");
+
+  const [selectedMovie, setSelectedMovie] = useState(movie || "");
+  const [selectedShowtime, setSelectedShowtime] = useState(showtime || "");
+  const [selectedHallType, setSelectedHallType] = useState(hall || "");
   const [selectedHall, setSelectedHall] = useState(""); // Hall will be set based on selected showtime
   const [loading, setLoading] = useState(false);
   const [seats, setSeats] = useState([]);

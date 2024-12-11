@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+
 import { FaEdit, FaSave, FaTimes, FaCamera } from 'react-icons/fa';
 import { PropagateLoader } from 'react-spinners';
 
@@ -76,6 +77,7 @@ const ProfileSection = ({ token }) => {
           'Content-Type': 'multipart/form-data',
         },
       });
+
     } catch (err) {
       setError('Failed to upload profile picture');
     }

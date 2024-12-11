@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-// import Spinner from './Spinner'; // Importing a spinner component for loading state
 import { PropagateLoader } from 'react-spinners';
 import { FaEdit, FaTrash } from 'react-icons/fa';
+
 
 const ManageShowtimesSection = ({ token }) => {
   const [showtimes, setShowtimes] = useState([]);
@@ -127,6 +127,7 @@ const ManageShowtimesSection = ({ token }) => {
 
   return (
     <div className="p-6 bg-background text-primary min-h-screen">
+
       <h2 className="text-3xl font-bold mb-6">Manage Showtimes</h2>
 
       {/* Form for creating or editing showtime */}
