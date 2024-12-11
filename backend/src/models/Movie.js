@@ -4,7 +4,7 @@ import mongoose from 'mongoose';
 const movieSchema = mongoose.Schema({
     title: { type: String, required: true },
     description: { type: String },
-    genre: { type: String, required: true },
+    genre: [String],
     duration: { type: Number, required: true },
     releaseDate: { type: Date, required: true },
     picture_url: { type: String },

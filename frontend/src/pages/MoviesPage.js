@@ -58,6 +58,8 @@ const MoviePage = () => {
           });
     };
 
+    const formatGenres = (genres) => (Array.isArray(genres) ? genres.join(', ') : '');
+
     if (loading) return <div className="text-center text-lg">Loading...</div>;
 
     return (
@@ -91,7 +93,7 @@ const MoviePage = () => {
                         {/* Movie Details */}
                         <div className="mt-6">
                             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold">{movie.title}</h1>
-                            <p className="text-xl text-gray-500 mt-2">{movie.genre}</p>
+                            <p className="text-xl text-gray-500 mt-2">{formatGenres(movie.genre)}</p>
                             <p className="text-xl text-highlight mt-4">Rating: {movie.rating}</p>
                             <p className="mt-4 text-lg sm:text-xl">{movie.description}</p>
                         </div>

@@ -141,12 +141,23 @@ const ManageMoviesSection = ({ token }) => {
 
     const handleInputChange = (e, isEdit = false) => {
         const { name, value } = e.target;
-        if (isEdit) {
-            setEditForm({ ...editForm, [name]: value });
+    
+        if (name === "genre") {
+            const genreArray = value.split(/,\s*/); // Split by commas and optional spaces
+            if (isEdit) {
+                setEditForm({ ...editForm, [name]: genreArray });
+            } else {
+                setForm({ ...form, [name]: genreArray });
+            }
         } else {
-            setForm({ ...form, [name]: value });
+            if (isEdit) {
+                setEditForm({ ...editForm, [name]: value });
+            } else {
+                setForm({ ...form, [name]: value });
+            }
         }
     };
+    
 
     const handleFileChange = (e) => {
         const { name, files } = e.target;
@@ -188,6 +199,7 @@ const ManageMoviesSection = ({ token }) => {
         }
     };
     
+    const formatGenres = (genres) => (Array.isArray(genres) ? genres.join(', ') : '');
 
     return (
         <div className="p-6 bg-background text-primary">
@@ -316,15 +328,17 @@ const ManageMoviesSection = ({ token }) => {
                                             placeholder="Description"
                                             className="border-2 border-highlight bg-background text-primary p-2 mb-4 w-full rounded-lg"
                                         />
+
                                         <input
                                             type="text"
                                             name="genre"
-                                            value={editForm.genre || ''}
+                                            value={formatGenres(editForm.genre) || ''}
                                             onChange={(e) => handleInputChange(e, true)}
-                                            placeholder="Genre"
+                                            placeholder="Genre (comma-separated)"
                                             className="border-2 border-highlight bg-background text-primary p-2 mb-4 w-full rounded-lg"
                                             required
                                         />
+
                                         <input
                                             type="date"
                                             name="releaseDate"
