@@ -1,154 +1,248 @@
-//pages/
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
-import {useSelector} from "react-redux";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useSelector } from "react-redux";
 
-import { useLocation } from 'react-router-dom';
 
+// Types
+const HALL_TYPES = ["golden", "silver", "platinum"];
+
+// Utility Functions
+const formatDate = (date) => new Date(date).toLocaleDateString();
+
+const sortSeats = (seats) => {
+  return seats.sort((a, b) => {
+    if (a.row === b.row) {
+      return a.column - b.column;
+    }
+    return a.row.localeCompare(b.row);
+  });
+};
+
+const groupSeatsByRow = (seats) => {
+  return seats.reduce((rows, seat) => {
+    rows[seat.row] = rows[seat.row] || [];
+    rows[seat.row].push(seat);
+    return rows;
+  }, {});
+};
+
+// UI Components
+const LoadingSpinner = () => (
+  <div className="min-h-screen bg-background flex justify-center items-center">
+    <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-highlight"></div>
+  </div>
+);
+
+const SelectionForm = ({
+  hallType,
+  setHallType,
+  movie,
+  setMovie,
+  showtime,
+  setShowtime,
+  movies,
+  showtimes,
+  onProceedToSeating,
+  selectedHall,
+}) => (
+  <div className="bg-secondary rounded-xl p-8 shadow-lg animate-fadeIn">
+    <div className="space-y-6">
+      <div className="relative">
+        <label htmlFor="hallType" className="text-lg font-display font-semibold text-primary mb-2 block">
+          Select Hall Type
+        </label>
+        <select
+          id="hallType"
+          value={hallType}
+          onChange={(e) => setHallType(e.target.value)}
+          className="w-full p-4 rounded-lg bg-background border-2 border-highlight text-primary focus:ring-2 focus:ring-accent transition-all duration-300"
+        >
+          <option value="">-- Select a Hall Type --</option>
+          {HALL_TYPES.map((type) => (
+            <option key={type} value={type} className="bg-background">
+              {type.charAt(0).toUpperCase() + type.slice(1)}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="relative">
+        <label htmlFor="movie" className="text-lg font-display font-semibold text-primary mb-2 block">
+          Select Movie
+        </label>
+        <select
+          id="movie"
+          value={movie}
+          onChange={(e) => setMovie(e.target.value)}
+          className="w-full p-4 rounded-lg bg-background border-2 border-highlight text-primary focus:ring-2 focus:ring-accent transition-all duration-300"
+        >
+          <option value="">-- Select a Movie --</option>
+          {movies.map((m) => (
+            <option key={m._id} value={m._id} className="bg-background">
+              {m.title}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="relative">
+        <label htmlFor="showtime" className="text-lg font-display font-semibold text-primary mb-2 block">
+          Select Showtime
+        </label>
+        <select
+          id="showtime"
+          value={showtime}
+          onChange={(e) => setShowtime(e.target.value)}
+          className="w-full p-4 rounded-lg bg-background border-2 border-highlight text-primary focus:ring-2 focus:ring-accent transition-all duration-300"
+          disabled={!showtimes.length}
+        >
+          <option value="">-- Select a Showtime --</option>
+          {showtimes.map((st) => (
+            <option key={st._id} value={st._id} className="bg-background">
+              {formatDate(st.date)} - {st.time} ({st.hallId.name})
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <button
+        onClick={onProceedToSeating}
+        disabled={!showtime || !selectedHall}
+        className="w-full py-4 bg-highlight hover:bg-accent text-white font-display font-semibold rounded-lg transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+      >
+        Proceed to Seat Selection
+      </button>
+    </div>
+  </div>
+);
+
+const SeatLegend = () => (
+  <div className="flex justify-center gap-4 mb-4">
+    <div className="flex items-center gap-2">
+      <div className="w-4 h-4 bg-white rounded"></div>
+      <span className="text-primary">Available</span>
+    </div>
+    <div className="flex items-center gap-2">
+      <div className="w-4 h-4 bg-highlight rounded"></div>
+      <span className="text-primary">Selected</span>
+    </div>
+    <div className="flex items-center gap-2">
+      <div className="w-4 h-4 bg-red-500 rounded"></div>
+      <span className="text-primary">Occupied</span>
+    </div>
+  </div>
+);
+
+const SeatGrid = ({ seats, selectedSeats, onSeatClick }) => (
+  <div className="grid gap-6">
+    {Object.entries(groupSeatsByRow(seats)).map(([rowKey, rowSeats]) => (
+      <div key={rowKey} className="flex items-center justify-center space-x-4">
+        <span className="font-display font-bold text-primary w-8">{rowKey}</span>
+        <div className="flex gap-4 flex-wrap justify-center">
+          {rowSeats.map((seat) => (
+            <button
+              key={`${seat.row}${seat.column}`}
+              onClick={() => onSeatClick(seat)}
+              className={`
+                w-12 h-12 rounded-lg font-display font-semibold
+                flex items-center justify-center
+                transform hover:scale-110 transition-all duration-300
+                ${
+                  seat.isAvailable
+                    ? selectedSeats.includes(`${seat.row}${seat.column}`)
+                      ? 'bg-highlight text-white'
+                      : 'bg-white text-background hover:bg-highlight hover:text-white'
+                    : 'bg-red-500 text-white cursor-not-allowed'
+                }
+              `}
+              disabled={!seat.isAvailable}
+            >
+              {seat.column}
+            </button>
+          ))}
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
+// Main Component
 const BookingPage = () => {
   const location = useLocation();
-  const { hall, movie, showtime } = location.state || {};
+  const navigate = useNavigate();
+  const { token } = useSelector((state) => state.auth);
+  const bookingData = location.state;
+
+  // State Management
+  const [loading, setLoading] = useState(true);
+  const [loadingSeats, setLoadingSeats] = useState(false);
+  const [userDetails, setUserDetails] = useState(null);
+
   const [movies, setMovies] = useState([]);
   const [filteredMovies, setFilteredMovies] = useState([]);
   const [showtimes, setShowtimes] = useState([]);
   const [filteredShowtimes, setFilteredShowtimes] = useState([]);
-  const [hallTypes, setHallTypes] = useState(["golden", "silver", "platinum"]);
-
-  const [selectedMovie, setSelectedMovie] = useState(movie || "");
-  const [selectedShowtime, setSelectedShowtime] = useState(showtime || "");
-  const [selectedHallType, setSelectedHallType] = useState(hall || "");
-  const [selectedHall, setSelectedHall] = useState(""); // Hall will be set based on selected showtime
-  const [loading, setLoading] = useState(false);
+  const [selectedHallType, setSelectedHallType] = useState("");
+  const [selectedMovie, setSelectedMovie] = useState("");
+  const [selectedShowtime, setSelectedShowtime] = useState("");
+  const [selectedHall, setSelectedHall] = useState("");
   const [seats, setSeats] = useState([]);
-  const [loadingSeats, setLoadingSeats] = useState(false);
-  const [selectedSeats, setSelectedSeats] = useState([]); // State for selected seats
-  const [userDetails, setUserDetails] = useState(null);
-  const { token } = useSelector((state) => state.auth);
-  const navigate = useNavigate();
- 
-  
+  const [selectedSeats, setSelectedSeats] = useState([]);
 
-   
-  const cancelPendingBooking = async (bookingId) => {
+  // API Calls
+  const fetchUserDetails = async () => {
+    if (!token) {
+      alert("Please log in to proceed.");
+      navigate("/login");
+      return;
+    }
+
     try {
-      // Make an API call to delete the booking by its ID
-      const response = await axios.delete(
-        `${process.env.REACT_APP_BACKEND_URL}/bookings/${bookingId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      const response = await axios.get(
+        `${process.env.REACT_APP_BACKEND_URL}/users/profile`,
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-  
-      if (response.status === 200) {
-        console.log("Pending booking canceled successfully");
-  
-        // Update the seat availability in the state after successful cancellation
-        setSeats((prevSeats) =>
-          prevSeats.map((seat) =>
-            seat.bookingId === bookingId
-              ? { ...seat, isAvailable: true, bookingId: null } // Reset bookingId to null
-              : seat
-          )
-        );
-  
-        // Remove the pending booking data from localStorage
-        localStorage.removeItem("pendingBooking");
-      } else {
-        console.warn("Booking cancellation did not return a success response");
-      }
+      setUserDetails(response.data);
     } catch (error) {
-      console.error("Error canceling pending booking:", error);
-  
-      // Optionally handle specific errors (e.g., booking not found)
-      if (error.response && error.response.status === 404) {
-        console.warn("Booking not found. It may have already been canceled.");
-      }
+      console.error("Error fetching user details:", error);
+      navigate("/login");
     }
   };
-  
 
-
-  // Fetch user details based on logged-in user
-  useEffect(() => {
-    const fetchUserDetails = async () => { // Get token from localStorage or context
-      if (token) {
-        try {
-          const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/users/profile`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-          setUserDetails(response.data); // Set user details in state
-        } catch (error) {
-          console.error("Error fetching user details:", error);
+  const fetchInitialData = async () => {
+    try {
+      const [moviesResponse, showtimesResponse] = await Promise.all([
+        axios.get(`${process.env.REACT_APP_BACKEND_URL}/movies`),
+        axios.get(`${process.env.REACT_APP_BACKEND_URL}/showtimes`),
+      ]);
+      setMovies(moviesResponse.data);
+      setShowtimes(showtimesResponse.data);
+      setFilteredShowtimes(showtimesResponse.data);
+      
+      // Set initial values from navigation state
+      if (bookingData) {
+        setSelectedHallType(bookingData.hall || "");
+        setSelectedMovie(bookingData.movie || "");
+        setSelectedShowtime(bookingData.showtime || "");
+        
+        // Automatically trigger seat fetching if all required data is present
+        if (bookingData.showtime) {
+          const showtime = showtimesResponse.data.find(st => st._id === bookingData.showtime);
+          if (showtime) {
+            setSelectedHall(showtime.hallId._id);
+            await fetchSeats(bookingData.showtime, showtime.hallId._id);
+          }
         }
-      } else {
-        alert("Please log in to proceed.");
-        navigate("/login"); // Redirect to login page if no token is found
       }
-    };
-
-    fetchUserDetails();
-  }, [navigate]);
-
-
-  // Fetch all showtimes and movies on component mount
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const [moviesResponse, showtimesResponse] = await Promise.all([
-          axios.get(`${process.env.REACT_APP_BACKEND_URL}/movies`),
-          axios.get(`${process.env.REACT_APP_BACKEND_URL}/showtimes`),
-        ]);
-        setMovies(moviesResponse.data);
-        setShowtimes(showtimesResponse.data);
-        setFilteredShowtimes(showtimesResponse.data); // Default to all showtimes initially
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
-
-  // Update filtered movies when hallType changes
-  useEffect(() => {
-    if (selectedHallType) {
-      const filtered = showtimes
-        .filter((showtime) => showtime.hallId.type === selectedHallType)
-        .map((showtime) => showtime.movieId);
-      const uniqueMovies = Array.from(new Set(filtered.map((movie) => movie._id)))
-        .map((id) => filtered.find((movie) => movie._id === id));
-      setFilteredMovies(uniqueMovies);
-    } else {
-      setFilteredMovies(movies); // Reset to all movies if no hallType selected
+      
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      setLoading(false);
     }
-  }, [selectedHallType, showtimes, movies]);
+  };
 
-  // Update filtered showtimes when movie or hallType changes
-  useEffect(() => {
-    const filtered = showtimes.filter(
-      (showtime) =>
-        (!selectedHallType || showtime.hallId.type === selectedHallType) &&
-        (!selectedMovie || showtime.movieId._id === selectedMovie)
-    );
-    setFilteredShowtimes(filtered);
-  }, [selectedHallType, selectedMovie, showtimes]);
-
-  // Set selectedHall when selectedShowtime changes
-  useEffect(() => {
-    if (selectedShowtime) {
-      const showtime = showtimes.find((showtime) => showtime._id === selectedShowtime);
-      setSelectedHall(showtime?.hallId?._id || "");
-    }
-  }, [selectedShowtime, showtimes]);
-
-  // Fetch seats for selected showtime and hall
   const fetchSeats = async (showtimeId, hallId) => {
     setLoadingSeats(true);
     try {
@@ -156,90 +250,61 @@ const BookingPage = () => {
         `${process.env.REACT_APP_BACKEND_URL}/seats`,
         { params: { showtimeId, hallId } }
       );
-      console.log(response.data);  // Log to check the seats data
-      
-      // Sort seats first by row alphabetically, then by column numerically
-      const sortedSeats = response.data.sort((a, b) => {
-        if (a.row === b.row) {
-          return a.column - b.column; // Sort by column numerically if row is the same
-        }
-        return a.row.localeCompare(b.row); // Sort by row alphabetically
-      });
-  
-      // Set the sorted seats to state
-      setSeats(sortedSeats);
+      setSeats(sortSeats(response.data));
     } catch (error) {
       console.error("Error fetching seats:", error);
     } finally {
       setLoadingSeats(false);
     }
   };
-  
 
-  // Handle seating display
-  const handleProceedToSeating = async () => {
-    if (selectedShowtime && selectedHall) {
-      await fetchSeats(selectedShowtime, selectedHall); // Pass both showtimeId and hallId
-    } else {
-      alert("Please select both a showtime and a hall.");
-    }
-  };
-  
-  // Handle seat selection
+  // Event Handlers
   const handleSeatClick = (seat) => {
     if (seat.isAvailable) {
-      const seatIdentifier = `${seat.row}${seat.column}`; // Combine row and column for seat identifier
-      setSelectedSeats((prevSelectedSeats) => {
-        if (prevSelectedSeats.includes(seatIdentifier)) {
-          // Deselect seat
-          return prevSelectedSeats.filter((s) => s !== seatIdentifier);
-        } else {
-          // Select seat
-          return [...prevSelectedSeats, seatIdentifier];
-        }
-      });
+      const seatId = `${seat.row}${seat.column}`;
+      setSelectedSeats((prev) =>
+        prev.includes(seatId)
+          ? prev.filter((s) => s !== seatId)
+          : [...prev, seatId]
+      );
     }
   };
-  
 
-  // Handle proceed to payment
-  // Proceed to Payment: Ensure booking creation succeeds
+  const handleProceedToSeating = async () => {
+    if (selectedShowtime && selectedHall) {
+      await fetchSeats(selectedShowtime, selectedHall);
+    }
+  };
+
   const handleProceedToPayment = async () => {
     if (selectedSeats.length === 0) {
       alert("Please select at least one seat.");
-      return; // Stop execution if no seats selected
+      return;
     }
 
     try {
-
       const response = await axios.post(
         `${process.env.REACT_APP_BACKEND_URL}/bookings`,
         {
           showtimeId: selectedShowtime,
-          seats: selectedSeats, // Send selected seats as identifiers
+          seats: selectedSeats,
         },
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
-      console.log("in BookingPage");
-      console.log(response.data);
+
       const booking = response.data;
-      
-      // Save the booking temporarily in local storage
       localStorage.setItem(
         "pendingBooking",
         JSON.stringify({ bookingId: booking._id })
       );
-      console.log(booking.createdAt);
-      // Navigate to payment only if booking is successfully created
+
       navigate("/payment", {
         state: {
           selectedSeats,
-          movie: filteredMovies.find((movie) => movie._id === selectedMovie),
-          showtime: showtimes.find((showtime) => showtime._id === selectedShowtime),
+          movie: filteredMovies.find((m) => m._id === selectedMovie),
+          showtime: showtimes.find((st) => st._id === selectedShowtime),
           userDetails,
           bookingId: booking._id,
           bookingdate: new Date(booking.updatedAt).toISOString(),
@@ -252,155 +317,121 @@ const BookingPage = () => {
     }
   };
 
-  
+  // Effects
+  useEffect(() => {
+    fetchUserDetails();
+    fetchInitialData();
+  }, []);
 
+  useEffect(() => {
+    if (selectedHallType) {
+      const filtered = showtimes
+        .filter((st) => st.hallId.type === selectedHallType)
+        .map((st) => st.movieId);
+      const uniqueMovies = Array.from(
+        new Set(filtered.map((m) => m._id))
+      ).map((id) => filtered.find((m) => m._id === id));
+      setFilteredMovies(uniqueMovies);
+    } else {
+      setFilteredMovies(movies);
+    }
+  }, [selectedHallType, showtimes, movies]);
+
+  useEffect(() => {
+    const filtered = showtimes.filter(
+      (st) =>
+        (!selectedHallType || st.hallId.type === selectedHallType) &&
+        (!selectedMovie || st.movieId._id === selectedMovie)
+    );
+    setFilteredShowtimes(filtered);
+  }, [selectedHallType, selectedMovie, showtimes]);
+
+  useEffect(() => {
+    if (selectedShowtime) {
+      const showtime = showtimes.find((st) => st._id === selectedShowtime);
+      if (showtime) {
+        setSelectedHall(showtime.hallId._id);
+        // Automatically fetch seats when showtime is selected
+        fetchSeats(selectedShowtime, showtime.hallId._id);
+      }
+    }
+  }, [selectedShowtime, showtimes]);
 
   if (loading || !userDetails) {
-    return <div>Loading...</div>; // Wait until user details are fetched
+    return <LoadingSpinner />;
   }
 
   return (
-    <div className="min-h-screen bg-background text-primary p-4">
-      <h1 className="text-3xl font-bold mb-6">Book Your Tickets</h1>
+    <div className="min-h-screen bg-background text-primary p-4 md:p-8">
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-4xl md:text-5xl font-display font-bold text-center mb-8 text-highlight">
+          Book Your Tickets
+        </h1>
 
-      {/* Movie, Hall Type, and Showtime Selections */}
-      <div className="mb-6">
-        {/* Hall Type Dropdown */}
-        <div className="mb-6">
-          <label htmlFor="hallType" className="block text-lg font-semibold mb-2">
-            Select Hall Type:
-          </label>
-          <select
-            id="hallType"
-            value={selectedHallType}
-            onChange={(e) => setSelectedHallType(e.target.value)}
-            className="w-full p-3 border rounded-lg bg-white text-black"
-          >
-            <option value="">-- Select a Hall Type --</option>
-            {hallTypes.map((hall) => (
-              <option key={hall} value={hall}>
-                {hall.charAt(0).toUpperCase() + hall.slice(1)}
-              </option>
-            ))}
-          </select>
-        </div>
+        <div className="space-y-8">
+          <SelectionForm
+            hallType={selectedHallType}
+            setHallType={setSelectedHallType}
+            movie={selectedMovie}
+            setMovie={setSelectedMovie}
+            showtime={selectedShowtime}
+            setShowtime={setSelectedShowtime}
+            movies={filteredMovies}
+            showtimes={filteredShowtimes}
+            onProceedToSeating={handleProceedToSeating}
+            selectedHall={selectedHall}
+          />
 
-        {/* Movie Dropdown */}
-        <div className="mb-6">
-          <label htmlFor="movie" className="block text-lg font-semibold mb-2">
-            Select Movie:
-          </label>
-          <select
-            id="movie"
-            value={selectedMovie}
-            onChange={(e) => setSelectedMovie(e.target.value)}
-            className="w-full p-3 border rounded-lg bg-white text-black"
-          >
-            <option value="">-- Select a Movie --</option>
-            {filteredMovies.map((movie) => (
-              <option key={movie._id} value={movie._id}>
-                {movie.title}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Showtime Dropdown */}
-        <div className="mb-6">
-          <label htmlFor="showtime" className="block text-lg font-semibold mb-2">
-            Select Showtime:
-          </label>
-          <select
-            id="showtime"
-            value={selectedShowtime}
-            onChange={(e) => setSelectedShowtime(e.target.value)}
-            className="w-full p-3 border rounded-lg bg-white text-black"
-            disabled={!filteredShowtimes.length}
-          >
-            <option value="">-- Select a Showtime --</option>
-            {filteredShowtimes.map((showtime) => (
-              <option key={showtime._id} value={showtime._id}>
-                {new Date(showtime.date).toLocaleDateString()} - {showtime.time} (
-                {showtime.hallId.name})
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Proceed to Seating Button */}
-        <button
-          onClick={handleProceedToSeating}
-          disabled={!selectedShowtime || !selectedHall} // Disable if either showtime or hall is not selected
-          className="w-full bg-highlight text-white py-3 rounded-lg hover:bg-accent font-semibold"
-        >
-          Proceed to Seat Selection
-        </button>
-      </div>
-
-      {/* Seating Section */}
-      {seats.length > 0 && (
-        <div>
-          <h2 className="text-2xl justify-center font-bold mb-4">Select Your Seats</h2>
           {loadingSeats ? (
-          <p>Loading seats...</p>
-        ) : (
-          <div className="grid gap-6 p-6 bg-secondary rounded-lg">
-            {Object.keys(
-              seats.reduce((rows, seat) => {
-                rows[seat.row] = rows[seat.row] || [];
-                rows[seat.row].push(seat);
-                return rows;
-              }, {})
-            )
-            .map((rowKey) => (
-              <div key={rowKey} className="flex items-center justify-center mb-4">
-                <span className="font-bold mr-4">{rowKey}</span>
-                <div className="flex gap-4 justify-center">
-                  {seats
-                    .filter((seat) => seat.row === rowKey)
-                    .map((seat) => (
-                      <button
-                        key={`${seat.row}${seat.column}`}
-                        onClick={() => handleSeatClick(seat)}
-                        className={`w-12 h-12 flex items-center justify-center border rounded-lg cursor-pointer ${
-                          seat.isAvailable
-                            ? selectedSeats.includes(`${seat.row}${seat.column}`)
-                              ? "bg-highlight text-white"
-                              : "bg-white text-black"
-                            : "bg-red-500 text-white cursor-not-allowed"
-                        }`}
-                        disabled={!seat.isAvailable}
-                      >
-                        {seat.column}
-                    </button>
-                    ))}
+            <LoadingSpinner />
+          ) : (
+            seats.length > 0 && (
+              <div className="bg-secondary rounded-xl p-8 shadow-lg animate-fadeIn">
+                <h2 className="text-2xl font-display font-bold text-primary mb-6 text-center">
+                  Select Your Seats
+                </h2>
+                
+                <div className="mb-8">
+                  <SeatLegend />
                 </div>
+
+                <SeatGrid
+                  seats={seats}
+                  selectedSeats={selectedSeats}
+                  onSeatClick={handleSeatClick}
+                />
+
+                {selectedSeats.length > 0 && (
+                  <div className="mt-8">
+                    <div className="bg-background rounded-lg p-4 mb-6">
+                      <h3 className="font-display font-semibold text-primary mb-2">
+                        Selected Seats:
+                      </h3>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedSeats.map((seat) => (
+                          <span
+                            key={seat}
+                            className="bg-highlight text-white px-3 py-1 rounded-full font-display"
+                          >
+                            {seat}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={handleProceedToPayment}
+                      className="w-full py-4 bg-accent hover:bg-highlight text-white font-display font-semibold rounded-lg transform hover:scale-105 transition-all duration-300"
+                    >
+                      Proceed to Payment
+                    </button>
+                  </div>
+                )}
               </div>
-            ))}
-          </div>
-        )}
-
-
-          {/* Selected Seats Display */}
-          {selectedSeats.length > 0 && (
-            <div className="mt-4">
-              <h3 className="font-semibold">Selected Seats:</h3>
-              <ul className="list-disc ml-5">
-                {selectedSeats.map((seat) => (
-                  <li key={seat}>{seat}</li>
-                ))}
-              </ul>
-            </div>
+            )
           )}
-          {/* Proceed to Payment Button */}
-          <button
-            onClick={handleProceedToPayment}
-            className="w-full bg-highlight text-white py-3 rounded-lg hover:bg-accent font-semibold mt-6"
-          >
-            Proceed to Payment
-          </button>
         </div>
-      )}
+      </div>
     </div>
   );
 };
