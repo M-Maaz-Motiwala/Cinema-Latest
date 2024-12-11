@@ -14,18 +14,24 @@ const Register = () => {
     const navigate = useNavigate();
     const { loading, error, token } = useSelector((state) => state.auth);
 
+    const passwordValidationRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
+
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        // Validate password length
-        if (password.length < 8) {
-            setPasswordError("Password must be at least 8 characters long");
+        // Validate password strength
+        if (!passwordValidationRegex.test(password)) {
+            setPasswordError(
+                "Password must be at least 8 characters long, include an uppercase letter, a number, and a special character"
+            );
             return;
         }
 
+        setPasswordError(""); // Clear any previous error
         const userData = { name, email, password };
         dispatch(registerUser(userData));
     };
+
 
     useEffect(() => {
         if (token) {

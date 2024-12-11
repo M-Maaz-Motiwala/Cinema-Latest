@@ -21,6 +21,7 @@ const ProfileSection = ({ token }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -43,6 +44,22 @@ const ProfileSection = ({ token }) => {
       setFormData({ ...formData, profilePicture: files[0] });
     } else {
       setFormData({ ...formData, [name]: value });
+
+      if (name === 'password') {
+        validatePassword(value);
+      }
+    }
+  };
+
+  const validatePassword = (password) => {
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (password && !passwordRegex.test(password)) {
+      setPasswordError(
+        'Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, a number, and a special character.'
+      );
+    } else {
+      setPasswordError('');
     }
   };
 
@@ -77,7 +94,6 @@ const ProfileSection = ({ token }) => {
           'Content-Type': 'multipart/form-data',
         },
       });
-
     } catch (err) {
       setError('Failed to upload profile picture');
     }
@@ -86,6 +102,8 @@ const ProfileSection = ({ token }) => {
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    if (passwordError) return; // Prevent submission if password is invalid.
+
     if (formData.name || formData.email || formData.password) {
       await updateProfileDetails();
     }
@@ -150,6 +168,7 @@ const ProfileSection = ({ token }) => {
               className="border-2 border-highlight bg-background text-primary p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-highlight w-full"
               placeholder="Leave blank to keep current password"
             />
+            {passwordError && <p className="text-red-500 text-sm mt-2">{passwordError}</p>}
           </div>
           <div className="relative">
             <label htmlFor="profilePicture" className="block text-lg font-semibold text-primary mb-2">
@@ -187,11 +206,12 @@ const ProfileSection = ({ token }) => {
               className="flex items-center bg-accent hover:bg-highlight text-white px-5 py-3 rounded-lg transition-transform transform hover:scale-105"
               disabled={loading}
             >
-              {loading ? <PropagateLoader
-                            color="#d97706"
-                            size={20}
-                            speedMultiplier={1}
-                          /> : <FaSave className="mr-2" />} Save Changes
+              {loading ? (
+                <PropagateLoader color="#d97706" size={20} speedMultiplier={1} />
+              ) : (
+                <FaSave className="mr-2" />
+              )}{' '}
+              Save Changes
             </button>
             <button
               type="button"

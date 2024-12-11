@@ -59,6 +59,11 @@ const ManageShowtimesSection = ({ token }) => {
 
   const handleCreateShowtime = async (e) => {
     e.preventDefault();
+    const today = new Date().toISOString().split('T')[0];
+    if (formData.date < today) {
+      alert("You can't select a past date!");
+      return;
+    }
     try {
       const response = await axios.post(
         `${process.env.REACT_APP_BACKEND_URL}/showtimes`,
@@ -106,6 +111,13 @@ const ManageShowtimesSection = ({ token }) => {
 
   const handleUpdateShowtime = async (e) => {
     e.preventDefault();
+    
+    const today = new Date().toISOString().split('T')[0];
+    if (formData.date < today) {
+      alert("You can't select a past date!");
+      return;
+    }
+    
     try {
       const response = await axios.put(
         `${process.env.REACT_APP_BACKEND_URL}/showtimes/${editingShowtime._id}`,
@@ -186,6 +198,7 @@ const ManageShowtimesSection = ({ token }) => {
               name="date"
               value={formData.date}
               onChange={handleInputChange}
+              min={new Date().toISOString().split('T')[0]} // Disable past dates
               required
               className="border-2 border-highlight bg-background text-primary p-3 rounded-lg w-full"
             />

@@ -13,10 +13,19 @@ const ResetPassword = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
+  const passwordValidationRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage("");
     setError("");
+
+    if (!passwordValidationRegex.test(newPassword)) {
+      setError(
+        "Password must be at least 8 characters long, include an uppercase letter, a number, and a special character"
+      );
+      return;
+    }
 
     if (newPassword !== confirmPassword) {
       setError("Passwords do not match");
@@ -105,8 +114,8 @@ const ResetPassword = () => {
         </form>
 
         {/* Message and Error Handling */}
-        {message && <p className="text-green-500 mt-4">{message}</p>}
         {error && <p className="text-red-500 mt-4">{error}</p>}
+        {message && <p className="text-green-500 mt-4">{message}</p>}
       </div>
     </div>
   );

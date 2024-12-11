@@ -1,101 +1,10 @@
-
-// UserDashboardContent.js
-
-import React from 'react';
-import defaultAvatar from '../static/default-avatar.png'
-
-const UserDashboardContent = ({ user, handleUpdate, name, setName, email, setEmail, currentPassword, setCurrentPassword, newPassword, setNewPassword, handleProfilePicUpload }) => {
-    return (
-        <div>
-            <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-highlight">Welcome, {user.name}</h2>
-            <div className="flex items-center flex-col sm:flex-row mb-8">
-                <div className="relative">
-                    <img
-                        src={
-                            user.profilePicture
-                                ? `${process.env.REACT_APP_BACKEND_URL_STATIC}/UserFiles/${user.profilePicture.replace(/\\/g, '/')}`
-                                : defaultAvatar
-                        }
-                        alt="Profile"
-                        className="rounded-full w-32 h-32 object-cover border-4 border-highlight"
-                    />
-                    <input
-                        type="file"
-                        alt="Click here to change"
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer rounded-full"
-                        onChange={(e) => {
-                            handleProfilePicUpload(e);
-                        }}
-                    />
-                </div>
-            </div>
-            <form onSubmit={handleUpdate} className="space-y-6">
-                <div>
-                    <label htmlFor="name" className="block text-sm sm:text-base font-medium">
-                        Name
-                    </label>
-                    <input
-                        type="text"
-                        id="name"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        className="mt-1 block w-full p-3 rounded-lg bg-background border border-highlight text-primary"
-                    />
-                </div>
-                <div>
-                    <label htmlFor="email" className="block text-sm sm:text-base font-medium">
-                        Email
-                    </label>
-                    <input
-                        type="email"
-                        id="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="mt-1 block w-full p-3 rounded-lg bg-background border border-highlight text-primary"
-                    />
-                </div>
-                <div>
-                    <label htmlFor="currentPassword" className="block text-sm sm:text-base font-medium">
-                        Current Password
-                    </label>
-                    <input
-                        type="password"
-                        id="currentPassword"
-                        value={currentPassword}
-                        onChange={(e) => setCurrentPassword(e.target.value)}
-                        className="mt-1 block w-full p-3 rounded-lg bg-background border border-highlight text-primary"
-                        required
-                    />
-                </div>
-                <div>
-                    <label htmlFor="newPassword" className="block text-sm sm:text-base font-medium">
-                        New Password (Optional)
-                    </label>
-                    <input
-                        type="password"
-                        id="newPassword"
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        className="mt-1 block w-full p-3 rounded-lg bg-background border border-highlight text-primary"
-                    />
-                </div>
-                <button
-                    type="submit"
-                    className="w-full bg-highlight text-white py-3 rounded-lg hover:bg-accent font-semibold"
-                >
-                    Update Profile
-                </button>
-            </form>
-        </div>
-    );
-=======
 // UserDashboard.js
 
-import React, { useState, useEffect } from 'react';
-import { FaUser, FaEnvelope, FaLock } from 'react-icons/fa';
-import { FiEdit } from 'react-icons/fi';
-import defaultAvatar from '../static/default-avatar.png';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import { FaUser, FaEnvelope, FaLock } from "react-icons/fa";
+import { FiEdit } from "react-icons/fi";
+import defaultAvatar from "../static/default-avatar.png";
+import axios from "axios";
 
 const UserDashboardContent = ({
   user,
@@ -112,6 +21,7 @@ const UserDashboardContent = ({
   token,
 }) => {
   const [bookings, setBookings] = useState([]);
+  const [passwordError, setPasswordError] = useState("");
 
   useEffect(() => {
     const fetchBookings = async () => {
@@ -121,12 +31,31 @@ const UserDashboardContent = ({
         });
         setBookings(data);
       } catch (error) {
-        console.error('Error fetching bookings:', error);
+        console.error("Error fetching bookings:", error);
       }
     };
 
     fetchBookings();
   }, [token]);
+
+  // Password validation function
+  const validatePassword = (password) => {
+    const regex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    return regex.test(password);
+  };
+
+  const handlePasswordChange = (e) => {
+    const newPass = e.target.value;
+    setNewPassword(newPass);
+
+    if (newPass && !validatePassword(newPass)) {
+      setPasswordError(
+        "Password must be at least 8 characters long, include uppercase, lowercase, number, and special character."
+      );
+    } else {
+      setPasswordError("");
+    }
+  };
 
   return (
     <div className="container mx-auto p-6 bg-secondary rounded-lg shadow-lg">
@@ -140,7 +69,7 @@ const UserDashboardContent = ({
           <img
             src={
               user.profilePicture
-                ? `${process.env.REACT_APP_BACKEND_URL_STATIC}/UserFiles/${user.profilePicture.replace(/\\/g, '/')}`
+                ? `${process.env.REACT_APP_BACKEND_URL_STATIC}/UserFiles/${user.profilePicture.replace(/\\/g, "/")}`
                 : defaultAvatar
             }
             alt="Profile"
@@ -152,9 +81,6 @@ const UserDashboardContent = ({
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer rounded-full"
             onChange={handleProfilePicUpload}
           />
-          <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-            <FiEdit className="text-white text-3xl" />
-          </div>
         </div>
       </div>
 
@@ -216,14 +142,16 @@ const UserDashboardContent = ({
               type="password"
               id="newPassword"
               value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
+              onChange={handlePasswordChange}
               className="w-full p-3 pl-10 border-2 border-highlight bg-background text-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-highlight"
             />
           </div>
+          {passwordError && <p className="text-red-500 text-sm mt-2">{passwordError}</p>}
         </div>
         <button
           type="submit"
           className="w-full bg-highlight text-white py-3 rounded-lg shadow-md hover:bg-accent hover:shadow-lg transition-transform transform hover:scale-105 font-semibold"
+          disabled={passwordError !== ""}
         >
           Update Profile
         </button>
@@ -239,7 +167,7 @@ const UserDashboardContent = ({
                 <h4 className="text-xl font-semibold text-highlight">
                   Showtime: {new Date(booking.showtimeId.date).toLocaleDateString()} - {booking.showtimeId.time}
                 </h4>
-                <p className="text-primary mt-2">Seats: {booking.seats.join(', ')}</p>
+                <p className="text-primary mt-2">Seats: {booking.seats.join(", ")}</p>
                 <p className="text-primary mt-2">Status: {booking.paymentStatus}</p>
               </li>
             ))}
