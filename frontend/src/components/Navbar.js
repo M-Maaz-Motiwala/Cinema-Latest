@@ -50,9 +50,9 @@ const Navbar = () => {
           </li>
           <li>
             <Link
-              to="/booking"
+              to="/bookings"
               className={`px-4 py-2 rounded-lg transition-all duration-300 ${
-                isActive("/booking") ? "bg-primary text-accent font-semibold" : "hover:bg-accent"
+                isActive("/bookings") ? "bg-primary text-accent font-semibold" : "hover:bg-accent"
               }`}
             >
               Booking
@@ -63,14 +63,14 @@ const Navbar = () => {
           {user && (
             <li>
               <Link
-                to={user.role === "admin" ? "/admin" : "/dashboard"}
+                to={"/dashboard"}
                 className={`px-4 py-2 rounded-lg transition-all duration-300 ${
-                  isActive(user.role === "admin" ? "/admin" : "/dashboard")
+                  isActive("/dashboard")
                     ? "bg-primary text-accent font-semibold"
                     : "hover:bg-accent"
                 }`}
               >
-                {user.role === "admin" ? "Admin Dashboard" : "User Dashboard"}
+                {"Dashboard"}
               </Link>
             </li>
           )}

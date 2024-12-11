@@ -26,6 +26,7 @@ export const getUserProfile = asyncHandler(async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
+      tickets: user.tickets,
       profilePicture: user.profilePicture
     });
   } else {
@@ -110,16 +111,11 @@ export const deleteUser = asyncHandler(async (req, res) => {
 });
 
 // @desc Assign a role to user (Admin only)
-// @route PUT /api/users/assign-role
+// @route PUT /api/users/:userId/role
 // @access Private/Admin
 export const assignRole = asyncHandler(async (req, res) => {
-  const { identifier, email, role } = req.body;
-  const idOrEmail = identifier || email;
-
-  if (!idOrEmail) {
-    res.status(400);
-    throw new Error("Identifier (email or user ID) is required");
-  }
+  const { userId } = req.params;
+  const { role } = req.body;
 
   // Validate role
   if (!["user", "admin"].includes(role)) {
@@ -127,15 +123,8 @@ export const assignRole = asyncHandler(async (req, res) => {
     throw new Error("Invalid role specified");
   }
 
-  // Find the user by ID or email
-  let user;
-  if (idOrEmail.includes("@")) {
-    // If identifier contains '@', assume it's an email
-    user = await User.findOne({ email: idOrEmail });
-  } else {
-    // Otherwise, assume it's a user ID
-    user = await User.findById(identifier);
-  }
+  // Find the user by ID
+  const user = await User.findById(userId);
 
   if (!user) {
     res.status(404);

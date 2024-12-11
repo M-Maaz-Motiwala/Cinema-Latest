@@ -1,4 +1,4 @@
-// src/routes/movieRoute.js
+// movieRoutes.js
 import express from 'express';
 import {
   getMovies,

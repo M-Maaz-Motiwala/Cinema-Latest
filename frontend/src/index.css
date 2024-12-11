@@ -18,3 +18,30 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* Custom Scrollbar Styles */
+.scrollbar-custom {
+  scrollbar-width: thin; /* For Firefox */
+  scrollbar-color: #f59e0b #1f2937; /* Thumb and track colors */
+
+  /* For Webkit-based browsers */
+  overflow-y: auto;
+}
+
+.scrollbar-custom::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-track {
+  background: #1f2937; /* Background track color */
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb {
+  background-color: #f59e0b; /* Thumb color */
+  border-radius: 4px; /* Rounded corners */
+  border: 2px solid #1f2937; /* Adds padding to the thumb */
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb:hover {
+  background-color: #d97706; /* Darker thumb color on hover */
+}

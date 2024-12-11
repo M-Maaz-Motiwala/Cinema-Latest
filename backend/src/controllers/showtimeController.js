@@ -1,6 +1,8 @@
-// src/controllers/showtimeController.js
+// showtimeController.js
 import Hall from '../models/Hall.js';
 import Movie from '../models/Movie.js';
+import Seats from '../models/Seat.js';
+import {createSeats} from '../controllers/seatController.js'
 import Showtime from '../models/Showtime.js';
 import asyncHandler from 'express-async-handler';
 
@@ -9,39 +11,40 @@ import asyncHandler from 'express-async-handler';
  * Returns true if a conflict exists, false otherwise
  */
 const checkShowtimeConflict = async (hallId, date, time, movieDuration) => {
-    // Fetch existing showtimes for the hall on the same date
-    const existingShowtimes = await Showtime.find({ hallId, date }).populate('movieId', 'duration');
-
-    // Calculate the start and end times of the new showtime
-    const newShowStart = new Date(`${date}T${time}`);
+    // Convert date to ISO format to avoid parsing issues
+    const formattedDate = new Date(date).toISOString().split('T')[0]; // Ensure it's in YYYY-MM-DD format
+    const newShowStart = new Date(`${formattedDate}T${time}:00`);
     const newShowEnd = new Date(newShowStart.getTime() + movieDuration * 60000);
 
     console.log(`New Show Start: ${newShowStart}`);
     console.log(`New Show End: ${newShowEnd}`);
     console.log("Existing Showtimes: ");
 
-    // Check for conflicts with each existing showtime
+    // Fetch existing showtimes for the hall on the same date
+    const existingShowtimes = await Showtime.find({ hallId, date: formattedDate }).populate('movieId', 'duration');
+
     for (const show of existingShowtimes) {
         if (!show.movieId || !show.movieId.duration) {
             throw new Error('Duration not found for an existing movie. Check movieId population.');
         }
 
-        const showStart = new Date(`${date}T${show.time}`);
+        const showStart = new Date(`${formattedDate}T${show.time}`);
         const showEnd = new Date(showStart.getTime() + show.movieId.duration * 60000);
 
         console.log(`Existing Show Start: ${showStart}`);
         console.log(`Existing Show End: ${showEnd}`);
 
-        // Check if new showtime overlaps with this existing showtime
+        // Check for conflicts
         if (!(newShowEnd <= showStart || newShowStart >= showEnd)) {
             console.log("Conflict Found!");
-            return true; // Conflict exists
+            return true;
         }
     }
 
     console.log("No Conflict Found!");
-    return false; // No conflict
+    return false;
 };
+
 
 
 // @desc Create a new showtime
@@ -49,36 +52,44 @@ const checkShowtimeConflict = async (hallId, date, time, movieDuration) => {
 // @access Private/Admin
 export const createShowtime = asyncHandler(async (req, res) => {
     const { movieId, hallId, date, time, ticketPrice } = req.body;
-
+  
     const movie = await Movie.findById(movieId);
     if (!movie) {
-        res.status(404);
-        throw new Error('Movie not found');
+      res.status(404);
+      throw new Error('Movie not found');
     }
     const hall = await Hall.findById(hallId);
     if (!hall) {
-        res.status(404);
-        throw new Error('Hall not found');
+      res.status(404);
+      throw new Error('Hall not found');
     }
-
+  
     const conflict = await checkShowtimeConflict(hallId, date, time, movie.duration);
     if (conflict) {
-        res.status(400);
-        throw new Error('Hall is not available at the selected time');
+      res.status(400);
+      throw new Error('Hall is not available at the selected time');
     }
-
+  
     const showtime = new Showtime({
-        movieId,
-        hallId,
-        date,
-        time,
-        availableSeats: hall.capacity,
-        ticketPrice,
+      movieId,
+      hallId,
+      date,
+      time,
+      availableSeats: hall.capacity,
+      ticketPrice,
     });
-
+  
     const createdShowtime = await showtime.save();
-    res.status(201).json(createdShowtime);
-});
+  
+    try {
+      const seats = await createSeats(createdShowtime.hallId, createdShowtime._id);
+      res.status(201).json({ createdShowtime, seats });
+    } catch (error) {
+      res.status(500);
+      throw new Error(`Failed to create seats: ${error.message}`);
+    }
+  });
+  
 
 // @desc Showtime By Date
 // @route GET /api/showtimes/filter/date/:date
@@ -110,6 +121,10 @@ export const updateShowtime = asyncHandler(async (req, res) => {
         throw new Error('Showtime not found');
     }
 
+    if (showtime.availableSeats < showtime.hallId.capacity) {
+        res.status(400);
+        throw new Error('Cannot update showtime as some seats have been booked');
+    }
     if (hallId) showtime.hallId = hallId;
     if (date) showtime.date = date;
     if (time) showtime.time = time;
@@ -126,11 +141,11 @@ export const getShowtimesForMovie = asyncHandler(async (req, res) => {
     const movieId = req.params.movieId;
     const showtimes = await Showtime.find({ movieId }).populate('hallId');
     if (!showtimes.length) {
-        res.status(404);
-        throw new Error('No showtimes found for this movie');
+        return res.status(404).json({ message: 'No showtimes found for this movie' });  // Ensure response is returned and exits early
     }
     res.json(showtimes);
 });
+
 
 // @desc Get showtimes for a specific hall
 // @route GET /api/showtimes/hall/:hallId
@@ -139,8 +154,7 @@ export const getShowtimesForHall = asyncHandler(async (req, res) => {
     const hallId = req.params.hallId;
     const showtimes = await Showtime.find({ hallId }).populate('movieId');
     if (!showtimes.length) {
-        res.status(404);
-        throw new Error('No showtimes found for this hall');
+        res.status(404).json({ message: 'No showtimes found for this hall' });
     }
     res.json(showtimes);
 });
@@ -149,12 +163,8 @@ export const getShowtimesForHall = asyncHandler(async (req, res) => {
 // @route GET /api/showtimes
 // @access Public
 export const getAllShowtimes = asyncHandler(async (req, res) => {
-    const showtimes = await Showtime.find().populate('hallId','name').populate('movieId','title duration picture_url');
-    if (!showtimes.length) {
-        res.status(404);
-        throw new Error('No showtimes found');
-    }
-    res.json(showtimes);
+    const showtimes = await Showtime.find().populate('hallId','name type').populate('movieId','title duration picture_url');
+    res.json(showtimes.length ? showtimes : []);
 });
 
 // @desc Delete a showtime
@@ -163,11 +173,22 @@ export const getAllShowtimes = asyncHandler(async (req, res) => {
 export const deleteShowtime = asyncHandler(async (req, res) => {
     
     try {
-        const showtime = await Showtime.findByIdAndDelete(req.params.id);
+        const showtime = await Showtime.findById(req.params.id);
+        console.log(showtime)
         if (!showtime) {
             res.status(404);
             throw new Error('Showtime not found');
         }
+        const hall = await Hall.findById(showtime.hallId);
+        console.log("availableSeats: ", showtime.availableSeats)
+        console.log("hallId.capacity: ", hall.capacity)
+        if (showtime.availableSeats < hall.capacity) {
+            res.status(400);
+            throw new Error('Cannot delete showtime as some seats have been booked');
+        }
+        const seat = await Seats.deleteMany({showtimeId: req.params.id})
+        console.log("deleted seats: ",seat)
+        await Showtime.findByIdAndDelete(req.params.id);
         res.json({ message: 'Showtime removed' });
     } catch (error) {
         res.status(400).json({ message: error.message });
