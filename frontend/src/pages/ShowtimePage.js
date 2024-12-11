@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { FaCalendar, FaTicketAlt } from 'react-icons/fa';
 import Modal from 'react-modal';
 
 const ShowtimePage = () => {
@@ -169,10 +170,12 @@ const ShowtimePage = () => {
                 </div>
                 <button
                   onClick={() => handleBooking(showtime)}
-                  className="ml-auto bg-accent hover:bg-highlight text-primary font-semibold py-2 px-6 rounded-lg transition duration-300"
+                  className="ml-auto bg-accent hover:bg-highlight text-primary font-semibold py-3 px-6 rounded-lg transition duration-300 text-m flex items-center"
                 >
+                  <FaTicketAlt className="mr-2" />
                   Book Now
                 </button>
+
               </div>
             ))
           ) : (

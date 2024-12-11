@@ -137,8 +137,8 @@ const PaymentPage = () => {
       <div className="max-w-2xl mx-auto">
         <div className="bg-secondary rounded-xl shadow-lg overflow-hidden">
           {/* Header */}
-          <div className=" p-6 bg-highlight bg-opacity-85 text-white">
-            <h1 className="text-3xl  font-display font-bold text-center">
+          <div className=" p-6 bg-secondary bg-opacity-100 text-white  ">
+            <h1 className="text-3xl  font-display font-bold text-center text-shadow-lg">
               Payment Details
             </h1>
           </div>

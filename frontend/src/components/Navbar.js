@@ -51,9 +51,7 @@ const Navbar = () => {
 
             {user ? (
               <div className="flex items-center">
-                <span className="text-gray-300 mr-4">
-                  Welcome, {user.name || 'User'}
-                </span>
+                
                 <Logout />
               </div>
             ) : (

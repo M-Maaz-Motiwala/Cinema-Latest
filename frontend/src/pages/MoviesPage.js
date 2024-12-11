@@ -1,12 +1,13 @@
-// MoviesPage.js
-
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+import { FaCalendar, FaTicketAlt } from 'react-icons/fa';
 
 const MoviePage = () => {
     const { movieId } = useParams();
+    const navigate = useNavigate();
     const [movie, setMovie] = useState(null);
+    const [showtimes, setShowtimes] = useState([]);
     const [loading, setLoading] = useState(true);
     const videoRef = useRef(null);
 
@@ -20,6 +21,15 @@ const MoviePage = () => {
             .catch((error) => {
                 console.error('Error fetching movie:', error);
                 setLoading(false);
+            });
+
+        // Fetch the showtimes for this movie
+        axios.get(`${process.env.REACT_APP_BACKEND_URL}/showtimes/${movieId}`)
+            .then((response) => {
+                setShowtimes(response.data);
+            })
+            .catch((error) => {
+                console.error('Error fetching showtimes:', error);
             });
     }, [movieId]);
 
@@ -38,13 +48,23 @@ const MoviePage = () => {
         }
     };
 
+    const handleBookNow = (showtime) => {
+        navigate('/bookings', {
+            state: {
+              hall: showtime.hallId.type,
+              movie: movie._id,
+              showtime: showtime._id,
+            },
+          });
+    };
+
     if (loading) return <div className="text-center text-lg">Loading...</div>;
 
     return (
-        <div className="min-h-screen bg-background text-primary">
-            <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-background text-primary ">
+            <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-7 ">
                 {movie && (
-                    <div className="bg-secondary p-6 sm:p-8 rounded-lg shadow-md">
+                    <div className="bg-secondary p-6 sm:p-8 rounded-lg shadow-md animate-fadeIn transform transition-transform duration-300 hover:scale-105 hover:shadow-lg">
                         {/* Movie Poster and Trailer */}
                         <div
                             className="relative group"
@@ -75,6 +95,38 @@ const MoviePage = () => {
                             <p className="text-xl text-highlight mt-4">Rating: {movie.rating}</p>
                             <p className="mt-4 text-lg sm:text-xl">{movie.description}</p>
                         </div>
+                    </div>
+                )}
+
+                {/* Showtimes */}
+                {showtimes.length > 0 && (
+                    <div className="mt-10">
+                        <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+                            <FaCalendar className="text-highlight" />
+                            Showtimes
+                        </h2>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                            {showtimes.map((showtime) => (
+                                <div 
+                                    key={showtime._id} 
+                                    className="bg-secondary rounded-xl shadow-md p-6 animate-fadeIn transform transition-transform duration-300 hover:scale-105 hover:shadow-lg"
+                                >
+                                    <h3 className="text-xl font-semibold text-primary">{showtime.hallId.name}</h3>
+                                    <p className="text-gray-300 text-sm">{new Date(showtime.date).toLocaleDateString()} - {showtime.time}</p>
+                                    <p className="text-m mt-2 text-highlight">Price: Rs.{showtime.ticketPrice}</p>
+                                    <div className="flex items-center mt-4">
+                                        <button
+                                            className="bg-highlight text-white py-1 px-3 rounded-lg hover:bg-accent transition-colors flex items-center"
+                                            onClick={() => handleBookNow(showtime)}
+                                        >
+                                            <FaTicketAlt className="mr-2" />
+                                            Book Now
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
                     </div>
                 )}
             </div>
