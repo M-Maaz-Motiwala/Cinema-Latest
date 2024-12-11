@@ -191,7 +191,7 @@ const ManageMoviesSection = ({ token }) => {
 
     return (
         <div className="p-6 bg-background text-primary">
-            <h2 className="text-3x1 font-bold mb-6">Manage Movies</h2>
+            <h2 className="text-3xl font-bold mb-6">Manage Movies</h2>
 
             {/* Create Movie Form */}
             <form className="mb-6 p-4 bg-secondary rounded-xl shadow-lg" onSubmit={handleCreateMovie}>
