@@ -122,12 +122,6 @@ export const updateMovie = asyncHandler(async (req, res) => {
       // Update movie fields
       Object.assign(movie, req.body);
   
-      // Save poster and trailer files if provided
-      const { poster: savedPosterPath, trailer: savedTrailerPath } = await saveMovieFiles(req.files, req.params.id);
-  
-      if (savedPosterPath) movie.poster = savedPosterPath;
-      if (savedTrailerPath) movie.trailer = savedTrailerPath;
-  
       const updatedMovie = await movie.save();
       res.status(200).json(updatedMovie);
     } catch (error) {

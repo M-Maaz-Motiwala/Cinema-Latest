@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { FaUser, FaUserShield } from "react-icons/fa"; // Import icons
 
 const UsersSection = ({ token }) => {
   const [users, setUsers] = useState([]);
@@ -102,7 +103,7 @@ const UsersSection = ({ token }) => {
           placeholder="Search by name or email..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="px-4 py-2 border-2 border-primary rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-highlight"
+          className="border-2 border-highlight bg-background text-primary p-2 mb-4 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-highlight"
         />
       </div>
 
@@ -120,10 +121,10 @@ const UsersSection = ({ token }) => {
         <tbody>
           {filteredUsers.map((user) => (
             <tr key={user._id} className="border-t border-primary">
-              <td className="px-6 py-4">{user.name}</td>
-              <td className="px-6 py-4">{user.email}</td>
-              <td className="px-6 py-4">{user.role}</td>
-              <td className="px-6 py-4">
+              <td className="px-6 py-4 text-center">{user.name}</td>
+              <td className="px-6 py-4 text-center">{user.email}</td>
+              <td className="px-6 py-4 text-center">{user.role}</td>
+              <td className="px-6 py-4 text-center">
                 <button
                   onClick={() => handleViewBookings(user._id)}
                   className="px-3 py-1 bg-highlight text-background rounded-lg hover:bg-accent"
@@ -131,20 +132,22 @@ const UsersSection = ({ token }) => {
                   View ({(userBookings[user._id]?.length || 0)})
                 </button>
               </td>
-              <td className="px-6 py-4">
+              <td className="px-6 py-4 text-center">
                 {user.role === "admin" ? (
                   <button
                     onClick={() => handleRoleChange(user._id, "user")}
-                    className="px-3 py-1 bg-accent text-background rounded-lg hover:bg-highlight"
+                    className="px-3 py-1 bg-accent text-background rounded-lg hover:bg-highlight flex items-center justify-center space-x-2"
                   >
-                    Demote to User
+                    <FaUser className="text-xl" />
+                    <span>Demote to User</span>
                   </button>
                 ) : (
                   <button
                     onClick={() => handleRoleChange(user._id, "admin")}
-                    className="px-3 py-1 bg-highlight text-background rounded-lg hover:bg-accent"
+                    className="px-3 py-1 bg-highlight text-background rounded-lg hover:bg-accent flex items-center justify-center space-x-2"
                   >
-                    Promote to Admin
+                    <FaUserShield className="text-xl" />
+                    <span>Promote to Admin</span>
                   </button>
                 )}
               </td>

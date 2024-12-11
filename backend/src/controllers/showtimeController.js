@@ -121,6 +121,10 @@ export const updateShowtime = asyncHandler(async (req, res) => {
         throw new Error('Showtime not found');
     }
 
+    if (showtime.availableSeats < showtime.hallId.capacity) {
+        res.status(400);
+        throw new Error('Cannot update showtime as some seats have been booked');
+    }
     if (hallId) showtime.hallId = hallId;
     if (date) showtime.date = date;
     if (time) showtime.time = time;
@@ -160,11 +164,7 @@ export const getShowtimesForHall = asyncHandler(async (req, res) => {
 // @access Public
 export const getAllShowtimes = asyncHandler(async (req, res) => {
     const showtimes = await Showtime.find().populate('hallId','name type').populate('movieId','title duration picture_url');
-    if (!showtimes.length) {
-        res.status(404);
-        throw new Error('No showtimes found');
-    }
-    res.json(showtimes);
+    res.json(showtimes.length ? showtimes : []);
 });
 
 // @desc Delete a showtime
@@ -173,12 +173,22 @@ export const getAllShowtimes = asyncHandler(async (req, res) => {
 export const deleteShowtime = asyncHandler(async (req, res) => {
     
     try {
-        const showtime = await Showtime.findByIdAndDelete(req.params.id);
+        const showtime = await Showtime.findById(req.params.id);
+        console.log(showtime)
         if (!showtime) {
             res.status(404);
             throw new Error('Showtime not found');
         }
-        const seat = await Seats.deleteMany({ShowtimeId: req.params.id})
+        const hall = await Hall.findById(showtime.hallId);
+        console.log("availableSeats: ", showtime.availableSeats)
+        console.log("hallId.capacity: ", hall.capacity)
+        if (showtime.availableSeats < hall.capacity) {
+            res.status(400);
+            throw new Error('Cannot delete showtime as some seats have been booked');
+        }
+        const seat = await Seats.deleteMany({showtimeId: req.params.id})
+        console.log("deleted seats: ",seat)
+        await Showtime.findByIdAndDelete(req.params.id);
         res.json({ message: 'Showtime removed' });
     } catch (error) {
         res.status(400).json({ message: error.message });
