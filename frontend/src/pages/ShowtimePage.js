@@ -1,4 +1,3 @@
-//pages/ShowtimePage.js
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -97,7 +96,7 @@ const ShowtimePage = () => {
           <select
             value={filterType}
             onChange={handleFilterChange}
-            className="p-3 border rounded-lg bg-secondary text-primary focus:ring-accent"
+            className="p-3 border border-secondary rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-accent bg-secondary text-primary"
           >
             <option value="movie">Movie</option>
             <option value="hall">Hall</option>
@@ -163,7 +162,7 @@ const ShowtimePage = () => {
                     {showtime.movieId.title}
                   </h3>
                   <p className="text-sm text-gray-400 mt-1">{showtime.hallId.name}</p>
-                  <p className="text-m font-semibold text-accent mt-2">
+                  <p className="text-lg font-semibold text-accent mt-2">
                     {`${new Date(showtime.date).toLocaleDateString()} ${showtime.time}`}
                   </p>
                   <p className="text-sm text-gray-300">Ticket Price: Rs.{showtime.ticketPrice}</p>
