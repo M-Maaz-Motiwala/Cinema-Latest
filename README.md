@@ -66,7 +66,7 @@
 
 ### Clone the Repository  
 \`\`\`bash
-git clone https://github.com/yourusername/cinema-app.git
+git clone [https://github.com/M-Maaz-Motiwala/Cinema-Latest.git]
 cd cinema-app
 \`\`\`
 
