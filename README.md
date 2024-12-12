@@ -105,51 +105,22 @@ Create a `.env` file in the **backend** directory and add the following:
 PORT=5000
 MONGO_URI=<your_mongodb_uri>
 JWT_SECRET=<your_jwt_secret>
+EMAIL_USER=<xyz@gmail.com>
+EMAIL_PASS=<password>
+CLIENT_URL=http://localhost:3000
+```
+Create a `.env` file in the **frontend** directory and add the following:  
+```env
 REACT_APP_BACKEND_URL=http://localhost:5000/api
 REACT_APP_BACKEND_URL_STATIC=http://localhost:5000
 ```
-
----
-
-## Folder Structure  
-
-### Backend (`/backend`)  
-```
-backend/
-│
-├── src/
-│   ├── config/        # Database and environment configurations  
-│   ├── controllers/   # Route controllers for handling requests  
-│   ├── models/        # Mongoose models  
-│   ├── routes/        # API routes  
-│   └── utils/         # Utility functions  
-│
-├── server.js          # Entry point for the backend server  
-└── package.json       # Backend dependencies  
-```
-
-### Frontend (`/frontend`)  
-```
-frontend/
-│
-├── src/
-│   ├── components/    # Reusable components  
-│   ├── pages/         # Pages corresponding to routes  
-│   ├── redux/         # Redux store and slices  
-│   └── styles/        # Tailwind CSS configurations  
-│
-├── public/            # Static files  
-├── package.json       # Frontend dependencies  
-└── tailwind.config.ts # Tailwind configuration  
-```
-
 ---
 
 ## Backend API Routes  
 
 ### Authentication  
 - `POST /auth/login` - Login a user.  
-- `POST /auth/register` - Register a new user.  
+- `POST /auth/register` - Register a new user.
 
 ### Users  
 - `GET /users/profile` - Fetch user profile.  
@@ -162,9 +133,9 @@ frontend/
 
 ### Bookings  
 - `GET /bookings` - Fetch all bookings.  
-- `POST /bookings` - Create a new booking.  
+- `POST /bookings` - Create a new booking.
 
-For a complete list of routes and request/response formats, check the **API Documentation** in the \`backend/docs/\` folder.
+For a complete list of routes and request/response formats, check the **ROUTES** in the `backend/src/routes/` folder.
 
 ---
 
