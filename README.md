@@ -160,7 +160,7 @@ For a complete list of routes and request/response formats, check the **ROUTES**
 ![Booking Page](https://github.com/user-attachments/assets/9972f5a1-1347-4b24-89e8-ba5c62798ac2)
 
 ### Seat Selection  
-![SeatingLayout](https://github.com/user-attachments/assets/35700531-70ca-4128-b169-39596b7604b5)
+![SeatingLayout](https://github.com/user-attachments/assets/f0daf52d-159a-4efb-94a9-b2387d001302)
 
 ### Payment Page  
 ![PaymentPage](https://github.com/user-attachments/assets/4f12f3b0-0cfe-46cb-8253-d53d6f4bf184)
