@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import Slider from 'react-slick';
-import { FaImage, FaClock, FaStar, FaCalendar } from 'react-icons/fa';
+import { FaImage, FaClock,FaTags, FaStar, FaCalendar } from 'react-icons/fa';
 
 const HomePage = () => {
     const [movies, setMovies] = useState([]);
@@ -45,6 +45,7 @@ const HomePage = () => {
         className: "rounded-xl overflow-hidden",
     };
 
+    
     const MovieCard = ({ movie, isUpcoming = false }) => (
         <Link to={`/movies/${movie._id}`}>
             <div className="bg-secondary rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-300">
@@ -72,15 +73,23 @@ const HomePage = () => {
                         <FaClock className="text-highlight" />
                         <span>{movie.duration} mins</span>
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-400">
+                    <div className="flex items-center gap-2 text-sm text-gray-400 mb-2">
                         <FaStar className="text-highlight" />
                         <span>{movie.rating}/10</span>
+                    </div>
+                    {/* Genre Section with Icon */}
+                    <div className="flex items-center gap-2 text-sm text-gray-400">
+                        <FaTags className="text-highlight" />
+                        <span>
+                            {movie.genre?.length > 0 ? movie.genre.join(', ') : 'N/A'}
+                        </span>
                     </div>
                 </div>
             </div>
         </Link>
     );
 
+    
     if (loading) {
         return (
             <div className="min-h-screen bg-background flex items-center justify-center">
