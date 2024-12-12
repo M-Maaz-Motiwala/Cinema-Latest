@@ -1,5 +1,7 @@
 ﻿# Cinema-Latest
 How to run:
+
+
 npm start for frontend
 
 nodemon src/server.js for backend
