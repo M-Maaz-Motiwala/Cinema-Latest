@@ -7,7 +7,7 @@ import Modal from 'react-modal';
 const ShowtimePage = () => {
   const [showtimes, setShowtimes] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filterType, setFilterType] = useState('movie'); // Default filter
+  const [filterType, setFilterType] = useState('movie');
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredShowtimes, setFilteredShowtimes] = useState([]);
   const [dropdownOptions, setDropdownOptions] = useState([]);
@@ -15,6 +15,11 @@ const ShowtimePage = () => {
   const navigate = useNavigate();
 
   const handleBooking = (showtime) => {
+    if (!showtime?.hallId?._id || !showtime?.movieId?._id || !showtime?._id) {
+      console.error('Invalid showtime data for booking');
+      return;
+    }
+    
     navigate('/bookings', {
       state: {
         hall: showtime.hallId.type,
@@ -28,8 +33,12 @@ const ShowtimePage = () => {
     axios
       .get(`${process.env.REACT_APP_BACKEND_URL}/showtimes`)
       .then((response) => {
-        setShowtimes(response.data);
-        setFilteredShowtimes(response.data);
+        // Filter out any invalid showtime data
+        const validShowtimes = response.data.filter(
+          (showtime) => showtime?.movieId && showtime?.hallId
+        );
+        setShowtimes(validShowtimes);
+        setFilteredShowtimes(validShowtimes);
         setLoading(false);
       })
       .catch((error) => {
@@ -40,7 +49,7 @@ const ShowtimePage = () => {
 
   const handleFilterChange = (e) => {
     setFilterType(e.target.value);
-    setSearchQuery(''); // Reset search query when filter type changes
+    setSearchQuery('');
   };
 
   const handleSearch = (e) => {
@@ -48,11 +57,13 @@ const ShowtimePage = () => {
     setSearchQuery(query);
 
     const filtered = showtimes.filter((showtime) => {
+      if (!showtime?.movieId || !showtime?.hallId) return false;
+
       const targetField =
         filterType === 'movie'
-          ? showtime.movieId.title.toLowerCase()
+          ? showtime.movieId.title?.toLowerCase() || ''
           : filterType === 'hall'
-          ? showtime.hallId.name.toLowerCase()
+          ? showtime.hallId.name?.toLowerCase() || ''
           : `${new Date(showtime.date).toLocaleDateString()} ${showtime.time}`.toLowerCase();
 
       return targetField.includes(query);
@@ -61,13 +72,16 @@ const ShowtimePage = () => {
     setFilteredShowtimes(filtered);
 
     const dropdownData = [...new Set(
-      showtimes.map((showtime) =>
-        filterType === 'movie'
-          ? showtime.movieId.title
-          : filterType === 'hall'
-          ? showtime.hallId.name
-          : `${new Date(showtime.date).toLocaleDateString()} ${showtime.time}`
-      )
+      showtimes
+        .filter((showtime) => showtime?.movieId && showtime?.hallId)
+        .map((showtime) =>
+          filterType === 'movie'
+            ? showtime.movieId.title
+            : filterType === 'hall'
+            ? showtime.hallId.name
+            : `${new Date(showtime.date).toLocaleDateString()} ${showtime.time}`
+        )
+        .filter(Boolean)
     )];
 
     setDropdownOptions(
@@ -76,6 +90,7 @@ const ShowtimePage = () => {
   };
 
   const openModal = (movie) => {
+    if (!movie) return;
     setSelectedMovie(movie);
   };
 
@@ -92,7 +107,6 @@ const ShowtimePage = () => {
           Explore Showtimes
         </h1>
 
-        {/* Filter and Search */}
         <div className="mb-8 flex flex-col md:flex-row justify-center items-center gap-4">
           <select
             value={filterType}
@@ -122,6 +136,7 @@ const ShowtimePage = () => {
                       setSearchQuery(option);
                       setFilteredShowtimes(
                         showtimes.filter((showtime) => {
+                          if (!showtime?.movieId || !showtime?.hallId) return false;
                           const targetField =
                             filterType === 'movie'
                               ? showtime.movieId.title
@@ -141,49 +156,48 @@ const ShowtimePage = () => {
           </div>
         </div>
 
-        {/* Movie List */}
         <div className="space-y-6">
           {filteredShowtimes.length > 0 ? (
             filteredShowtimes.map((showtime) => (
-              <div
-                key={showtime._id}
-                className="bg-secondary p-4 rounded-xl shadow-lg hover:shadow-2xl transition-transform transform hover:scale-105 flex gap-6 items-center"
-              >
-                <img
-                  src={`${process.env.REACT_APP_BACKEND_URL_STATIC}/MovieFiles/${showtime.movieId.picture_url.replace(
-                    /\\/g,
-                    '/'
-                  )}`}
-                  alt={showtime.movieId.title}
-                  className="rounded-lg object-cover w-24 h-24 cursor-pointer border border-accent"
-                  onClick={() => openModal(showtime.movieId)}
-                />
-                <div className="flex-1">
-                  <h3 className="text-xl font-bold text-highlight">
-                    {showtime.movieId.title}
-                  </h3>
-                  <p className="text-sm text-gray-400 mt-1">{showtime.hallId.name}</p>
-                  <p className="text-lg font-semibold text-accent mt-2">
-                    {`${new Date(showtime.date).toLocaleDateString()} ${showtime.time}`}
-                  </p>
-                  <p className="text-sm text-gray-300">Ticket Price: Rs.{showtime.ticketPrice}</p>
-                </div>
-                <button
-                  onClick={() => handleBooking(showtime)}
-                  className="ml-auto bg-accent hover:bg-highlight text-primary font-semibold py-3 px-6 rounded-lg transition duration-300 text-m flex items-center"
+              showtime?.movieId && showtime?.hallId && (
+                <div
+                  key={showtime._id}
+                  className="bg-secondary p-4 rounded-xl shadow-lg hover:shadow-2xl transition-transform transform hover:scale-105 flex gap-6 items-center"
                 >
-                  <FaTicketAlt className="mr-2" />
-                  Book Now
-                </button>
-
-              </div>
+                  <img
+                    src={`${process.env.REACT_APP_BACKEND_URL_STATIC}/MovieFiles/${showtime.movieId.picture_url?.replace(
+                      /\\/g,
+                      '/'
+                    )}`}
+                    alt={showtime.movieId.title}
+                    className="rounded-lg object-cover w-24 h-24 cursor-pointer border border-accent"
+                    onClick={() => openModal(showtime.movieId)}
+                  />
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-highlight">
+                      {showtime.movieId.title}
+                    </h3>
+                    <p className="text-sm text-gray-400 mt-1">{showtime.hallId.name}</p>
+                    <p className="text-lg font-semibold text-accent mt-2">
+                      {`${new Date(showtime.date).toLocaleDateString()} ${showtime.time}`}
+                    </p>
+                    <p className="text-sm text-gray-300">Ticket Price: Rs.{showtime.ticketPrice}</p>
+                  </div>
+                  <button
+                    onClick={() => handleBooking(showtime)}
+                    className="ml-auto bg-accent hover:bg-highlight text-primary font-semibold py-3 px-6 rounded-lg transition duration-300 text-m flex items-center"
+                  >
+                    <FaTicketAlt className="mr-2" />
+                    Book Now
+                  </button>
+                </div>
+              )
             ))
           ) : (
             <div className="text-center text-lg text-gray-400">No showtimes found.</div>
           )}
         </div>
 
-        {/* Modal for Movie Details */}
         <Modal
           isOpen={!!selectedMovie}
           onRequestClose={closeModal}

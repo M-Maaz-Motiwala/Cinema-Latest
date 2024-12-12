@@ -3,7 +3,6 @@ import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 
-
 // Types
 const HALL_TYPES = ["golden", "silver", "platinum"];
 
@@ -78,7 +77,7 @@ const SelectionForm = ({
           className="w-full p-4 rounded-lg bg-background border-2 border-highlight text-primary focus:ring-2 focus:ring-accent transition-all duration-300"
         >
           <option value="">-- Select a Movie --</option>
-          {movies.map((m) => (
+          {movies?.map((m) => (
             <option key={m._id} value={m._id} className="bg-background">
               {m.title}
             </option>
@@ -95,12 +94,12 @@ const SelectionForm = ({
           value={showtime}
           onChange={(e) => setShowtime(e.target.value)}
           className="w-full p-4 rounded-lg bg-background border-2 border-highlight text-primary focus:ring-2 focus:ring-accent transition-all duration-300"
-          disabled={!showtimes.length}
+          disabled={!showtimes?.length}
         >
           <option value="">-- Select a Showtime --</option>
-          {showtimes.map((st) => (
+          {showtimes?.map((st) => (
             <option key={st._id} value={st._id} className="bg-background">
-              {formatDate(st.date)} - {st.time} ({st.hallId.name})
+              {formatDate(st.date)} - {st.time} ({st.hallId?.name || 'Unknown Hall'})
             </option>
           ))}
         </select>
@@ -136,7 +135,7 @@ const SeatLegend = () => (
 
 const SeatGrid = ({ seats, selectedSeats, onSeatClick }) => (
   <div className="grid gap-6">
-    {Object.entries(groupSeatsByRow(seats)).map(([rowKey, rowSeats]) => (
+    {Object.entries(groupSeatsByRow(seats || [])).map(([rowKey, rowSeats]) => (
       <div key={rowKey} className="flex items-center justify-center space-x-4">
         <span className="font-display font-bold text-primary w-8">{rowKey}</span>
         <div className="flex gap-4 flex-wrap justify-center">
@@ -216,20 +215,24 @@ const BookingPage = () => {
         axios.get(`${process.env.REACT_APP_BACKEND_URL}/movies`),
         axios.get(`${process.env.REACT_APP_BACKEND_URL}/showtimes`),
       ]);
-      setMovies(moviesResponse.data);
-      setShowtimes(showtimesResponse.data);
-      setFilteredShowtimes(showtimesResponse.data);
+
+      // Filter out invalid showtimes and ensure data integrity
+      const validShowtimes = (showtimesResponse.data || []).filter(
+        (showtime) => showtime?.hallId?.type && showtime?.movieId?._id
+      );
+
+      setMovies(moviesResponse.data || []);
+      setShowtimes(validShowtimes);
+      setFilteredShowtimes(validShowtimes);
       
-      // Set initial values from navigation state
       if (bookingData) {
         setSelectedHallType(bookingData.hall || "");
         setSelectedMovie(bookingData.movie || "");
         setSelectedShowtime(bookingData.showtime || "");
         
-        // Automatically trigger seat fetching if all required data is present
         if (bookingData.showtime) {
-          const showtime = showtimesResponse.data.find(st => st._id === bookingData.showtime);
-          if (showtime) {
+          const showtime = validShowtimes.find(st => st._id === bookingData.showtime);
+          if (showtime?.hallId?._id) {
             setSelectedHall(showtime.hallId._id);
             await fetchSeats(bookingData.showtime, showtime.hallId._id);
           }
@@ -244,15 +247,18 @@ const BookingPage = () => {
   };
 
   const fetchSeats = async (showtimeId, hallId) => {
+    if (!showtimeId || !hallId) return;
+    
     setLoadingSeats(true);
     try {
       const response = await axios.get(
         `${process.env.REACT_APP_BACKEND_URL}/seats`,
         { params: { showtimeId, hallId } }
       );
-      setSeats(sortSeats(response.data));
+      setSeats(sortSeats(response.data || []));
     } catch (error) {
       console.error("Error fetching seats:", error);
+      setSeats([]);
     } finally {
       setLoadingSeats(false);
     }
@@ -260,14 +266,14 @@ const BookingPage = () => {
 
   // Event Handlers
   const handleSeatClick = (seat) => {
-    if (seat.isAvailable) {
-      const seatId = `${seat.row}${seat.column}`;
-      setSelectedSeats((prev) =>
-        prev.includes(seatId)
-          ? prev.filter((s) => s !== seatId)
-          : [...prev, seatId]
-      );
-    }
+    if (!seat?.isAvailable) return;
+    
+    const seatId = `${seat.row}${seat.column}`;
+    setSelectedSeats((prev) =>
+      prev.includes(seatId)
+        ? prev.filter((s) => s !== seatId)
+        : [...prev, seatId]
+    );
   };
 
   const handleProceedToSeating = async () => {
@@ -295,6 +301,8 @@ const BookingPage = () => {
       );
 
       const booking = response.data;
+      if (!booking?._id) throw new Error("Invalid booking response");
+
       localStorage.setItem(
         "pendingBooking",
         JSON.stringify({ bookingId: booking._id })
@@ -303,8 +311,8 @@ const BookingPage = () => {
       navigate("/payment", {
         state: {
           selectedSeats,
-          movie: filteredMovies.find((m) => m._id === selectedMovie),
-          showtime: showtimes.find((st) => st._id === selectedShowtime),
+          movie: filteredMovies.find((m) => m?._id === selectedMovie),
+          showtime: showtimes.find((st) => st?._id === selectedShowtime),
           userDetails,
           bookingId: booking._id,
           bookingdate: new Date(booking.updatedAt).toISOString(),
@@ -324,13 +332,18 @@ const BookingPage = () => {
   }, []);
 
   useEffect(() => {
-    if (selectedHallType) {
-      const filtered = showtimes
-        .filter((st) => st.hallId.type === selectedHallType)
-        .map((st) => st.movieId);
+    if (selectedHallType && showtimes?.length > 0) {
+      const validShowtimes = showtimes.filter(
+        (st) => st?.hallId?.type === selectedHallType
+      );
+      const filtered = validShowtimes
+        .map((st) => st?.movieId)
+        .filter(Boolean); // Filter out null/undefined movies
+      
       const uniqueMovies = Array.from(
         new Set(filtered.map((m) => m._id))
       ).map((id) => filtered.find((m) => m._id === id));
+      
       setFilteredMovies(uniqueMovies);
     } else {
       setFilteredMovies(movies);
@@ -338,20 +351,19 @@ const BookingPage = () => {
   }, [selectedHallType, showtimes, movies]);
 
   useEffect(() => {
-    const filtered = showtimes.filter(
+    const filtered = (showtimes || []).filter(
       (st) =>
-        (!selectedHallType || st.hallId.type === selectedHallType) &&
-        (!selectedMovie || st.movieId._id === selectedMovie)
+        (!selectedHallType || (st?.hallId?.type === selectedHallType)) &&
+        (!selectedMovie || st?.movieId?._id === selectedMovie)
     );
     setFilteredShowtimes(filtered);
   }, [selectedHallType, selectedMovie, showtimes]);
 
   useEffect(() => {
     if (selectedShowtime) {
-      const showtime = showtimes.find((st) => st._id === selectedShowtime);
-      if (showtime) {
+      const showtime = showtimes?.find((st) => st._id === selectedShowtime);
+      if (showtime?.hallId?._id) {
         setSelectedHall(showtime.hallId._id);
-        // Automatically fetch seats when showtime is selected
         fetchSeats(selectedShowtime, showtime.hallId._id);
       }
     }
