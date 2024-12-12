@@ -176,13 +176,13 @@ For a complete list of routes and request/response formats, check the **API Docu
 ![UserDashboard](https://github.com/user-attachments/assets/6ec30692-9865-4c0c-8b29-a672b1b2d284)
 
 ### Home Page  
-![homepage2](https://github.com/user-attachments/assets/94541155-6b5c-473b-b8b2-1a0d69b02001)
 ![homepage12](https://github.com/user-attachments/assets/363a09f5-a8ec-484b-8896-797553f31e50)
+![homepage2](https://github.com/user-attachments/assets/94541155-6b5c-473b-b8b2-1a0d69b02001)
 
 ### Showtime Page 
 ![Showtimepage](https://github.com/user-attachments/assets/c49bebf6-066d-40dc-9b38-8243d7a4fb95)
 
-### Movie Page with its trailer o hover  
+### Movie Page with its trailer on hover  
 ![Moviepage](https://github.com/user-attachments/assets/0edabe5d-71cd-4629-bc37-f1b7a9c24ad1)
 
 ### Booking Page  
