@@ -65,56 +65,56 @@
 - MongoDB Atlas account setup.  
 
 ### Clone the Repository  
-\`\`\`bash
+```bash
 git clone [https://github.com/M-Maaz-Motiwala/Cinema-Latest.git]
 cd cinema-app
-\`\`\`
+```
 
 ### Install Dependencies  
 #### Backend  
-\`\`\`bash
+```bash
 cd backend
 npm install
-\`\`\`
+```
 
 #### Frontend  
-\`\`\`bash
+```bash
 cd frontend
 npm install
-\`\`\`
+```
 
 ### Run the App  
 #### Backend  
-\`\`\`bash
+```bash
 npm start
-\`\`\`
+```
 
 #### Frontend  
-\`\`\`bash
+```bash
 npm start
-\`\`\`
+```
 
-The app will be available at \`http://localhost:3000\`.
+The app will be available at `http://localhost:3000`.
 
 ---
 
 ## Environment Variables  
 
-Create a \`.env\` file in the **backend** directory and add the following:  
-\`\`\`env
+Create a `.env` file in the **backend** directory and add the following:  
+```env
 PORT=5000
 MONGO_URI=<your_mongodb_uri>
 JWT_SECRET=<your_jwt_secret>
 REACT_APP_BACKEND_URL=http://localhost:5000/api
 REACT_APP_BACKEND_URL_STATIC=http://localhost:5000
-\`\`\`
+```
 
 ---
 
 ## Folder Structure  
 
-### Backend (\`/backend\`)  
-\`\`\`
+### Backend (`/backend`)  
+```
 backend/
 │
 ├── src/
@@ -126,10 +126,10 @@ backend/
 │
 ├── server.js          # Entry point for the backend server  
 └── package.json       # Backend dependencies  
-\`\`\`
+```
 
-### Frontend (\`/frontend\`)  
-\`\`\`
+### Frontend (`/frontend`)  
+```
 frontend/
 │
 ├── src/
@@ -141,28 +141,28 @@ frontend/
 ├── public/            # Static files  
 ├── package.json       # Frontend dependencies  
 └── tailwind.config.ts # Tailwind configuration  
-\`\`\`
+```
 
 ---
 
 ## Backend API Routes  
 
 ### Authentication  
-- \`POST /auth/login\` - Login a user.  
-- \`POST /auth/register\` - Register a new user.  
+- `POST /auth/login` - Login a user.  
+- `POST /auth/register` - Register a new user.  
 
 ### Users  
-- \`GET /users/profile\` - Fetch user profile.  
-- \`PUT /users/profile\` - Update user profile details.  
-- \`POST /users/profile-picture\` - Upload profile picture.  
+- `GET /users/profile` - Fetch user profile.  
+- `PUT /users/profile` - Update user profile details.  
+- `POST /users/profile-picture` - Upload profile picture.  
 
 ### Movies  
-- \`GET /movies\` - Fetch all movies.  
-- \`POST /movies\` - Add a new movie.  
+- `GET /movies` - Fetch all movies.  
+- `POST /movies` - Add a new movie.  
 
 ### Bookings  
-- \`GET /bookings\` - Fetch all bookings.  
-- \`POST /bookings\` - Create a new booking.  
+- `GET /bookings` - Fetch all bookings.  
+- `POST /bookings` - Create a new booking.  
 
 For a complete list of routes and request/response formats, check the **API Documentation** in the \`backend/docs/\` folder.
 
