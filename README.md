@@ -18,7 +18,7 @@ Homepage:
 ![homepage12](https://github.com/user-attachments/assets/ba460245-87a8-4c34-ad8a-15282ff7ec02)
 ![homepage2](https://github.com/user-attachments/assets/2445341b-0d2f-4e67-be43-927be1393be7)
 
-MoviePage:
+MoviePage with its Trailer on hover:
 
 ![Moviepage](https://github.com/user-attachments/assets/c9778112-e276-4ac0-b943-e0ede8dc53ba)
 
